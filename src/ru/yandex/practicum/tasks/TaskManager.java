@@ -1,7 +1,7 @@
 package ru.yandex.practicum.tasks;
 
-import ru.yandex.practicum.tasks.exceptions.NotFound;
-import ru.yandex.practicum.tasks.exceptions.WrongTaskType;
+import ru.yandex.practicum.tasks.exceptions.TaskNotFoundException;
+import ru.yandex.practicum.tasks.exceptions.WrongTaskTypeException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +42,12 @@ public class TaskManager {
 
     public static List<Subtask> getSubtasksOfEpic(int epicId) {
         if (!tasks.containsKey(epicId)) {
-            throw new NotFound("Не найден эпик с id = " + epicId);
+            throw new TaskNotFoundException("Не найден эпик с id = " + epicId);
         }
         BaseTask task = tasks.get(epicId);
 
         if (!task.getTaskType().equals(TaskType.EPIC)) {
-            throw new WrongTaskType("Задача не является эпиком");
+            throw new WrongTaskTypeException("Задача не является эпиком");
         }
 
         Epic epic = (Epic) task;

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.tasks;
 
-import ru.yandex.practicum.tasks.exceptions.Forbidden;
+import ru.yandex.practicum.tasks.exceptions.MethodIsForbiddenException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,6 @@ public class Epic extends BaseTask {
 
     @Override
     public void setStatus(Status status) {
-        throw new Forbidden("Нельзя вызывать этот метод у Epic");
+        throw new MethodIsForbiddenException("Нельзя вызывать этот метод у Epic");
     }
 }
