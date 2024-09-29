@@ -1,4 +1,7 @@
-package ru.yandex.practicum.tasks;
+package ru.yandex.practicum.tasks.model;
+
+import ru.yandex.practicum.tasks.model.enums.Status;
+import ru.yandex.practicum.tasks.model.enums.TaskType;
 
 import java.util.Objects;
 
@@ -6,12 +9,11 @@ public abstract class BaseTask {
     protected String name;
     protected String description;
     protected int id;
-    protected Status status;
+    protected Status status = Status.NEW;
 
-    public BaseTask(String name, String description, Status status) {
+    public BaseTask(String name, String description) {
         this.name = name;
         this.description = description;
-        this.status = status;
     }
 
     public abstract TaskType getTaskType();
