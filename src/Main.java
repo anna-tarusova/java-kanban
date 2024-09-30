@@ -16,55 +16,57 @@ public class Main {
 
         Epic epic2 = new Epic("Эпик 2", "Описание эпика 2");
         Subtask subtask3 = new Subtask("Сабтаск 1 эпика 2", "Описание сабтаска 1 эпика 2");
-
-        TaskManager.add(epic1);
-        TaskManager.add(epic2);
-        TaskManager.add(task1);
-        TaskManager.add(task2);
-
-        TaskManager.add(subtask1, epic1.getId());
-        TaskManager.add(subtask2, epic1.getId());
-
-        TaskManager.add(subtask3, epic2.getId());
+        TaskManager taskManager = new TaskManager();
 
 
+        taskManager.add(epic1);
+        taskManager.add(epic2);
+        taskManager.add(task1);
+        taskManager.add(task2);
+
+        taskManager.add(subtask1, epic1.getId());
+        taskManager.add(subtask2, epic1.getId());
+
+        taskManager.add(subtask3, epic2.getId());
 
 
-        System.out.println(TaskManager.getAllTasksOfAnyType());
-        System.out.println(TaskManager.getListEpics());
-        System.out.println(TaskManager.getSubtasksOfEpic(epic1.getId()));
-        System.out.println(TaskManager.getSubtasksOfEpic(epic2.getId()));
+
+
+        System.out.println(taskManager.getAllTasksOfAnyType());
+        System.out.println(taskManager.getListEpics());
+        System.out.println(taskManager.getSubtasksOfEpic(epic1.getId()));
+        System.out.println(taskManager.getSubtasksOfEpic(epic2.getId()));
 
 
         System.out.println("epic1.getStatus() = " + epic1.getStatus());
         System.out.println(epic2.getStatus());
-        TaskManager.setStatusOfSubtask(subtask1.getId(), Status.IN_PROGRESS);
+        taskManager.setStatusOfSubtask(subtask1.getId(), Status.IN_PROGRESS);
         System.out.println("epic1.getStatus() = " + epic1.getStatus());
 
-        TaskManager.setStatus(subtask1, Status.DONE);
-        TaskManager.setStatus(subtask2, Status.DONE);
+        taskManager.setStatus(subtask1, Status.DONE);
+        taskManager.setStatus(subtask2, Status.DONE);
         System.out.println("epic1.getStatus() = " + epic1.getStatus());
 
-        TaskManager.setStatusOfSubtask(subtask2.getId(), Status.IN_PROGRESS);
+        taskManager.setStatusOfSubtask(subtask2.getId(), Status.IN_PROGRESS);
         System.out.println("epic1.getStatus() = " + epic1.getStatus());
-        TaskManager.remove(subtask2);
+        taskManager.remove(subtask2);
         System.out.println("epic1.getStatus() = " + epic1.getStatus());
 
         System.out.println("clearSubTasks");
-        TaskManager.clearSubTasks();
+        taskManager.clearSubTasks();
         System.out.println("epic1.getStatus() = " + epic1.getStatus());
-        System.out.println(TaskManager.getSubtasksOfEpic(epic1.getId()));
+        System.out.println(taskManager.getSubtasksOfEpic(epic1.getId()));
 
-        TaskManager.add(subtask3, epic2.getId());
+        taskManager.add(subtask3, epic2.getId());
         System.out.println("Сабтаски эпика 2");
-        System.out.println(TaskManager.getSubtasksOfEpic(epic2.getId()));
+        System.out.println(taskManager.getSubtasksOfEpic(epic2.getId()));
 
-        TaskManager.clearEpics();;
+        taskManager.clearEpics();;
         System.out.println("Сабтаски после clearEpics");
-        System.out.println(TaskManager.getListSubtasks());
+        System.out.println(taskManager.getListSubtasks());
 
 
-        TaskManager.clearTasksOfAnyType();
-        System.out.println(TaskManager.getAllTasksOfAnyType());
+        taskManager.clearTasksOfAnyType();
+        System.out.println(taskManager.getAllTasksOfAnyType());
     }
 }

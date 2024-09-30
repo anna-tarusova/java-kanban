@@ -13,41 +13,41 @@ import java.util.Map;
 
 public class TaskManager {
 
-    private static int taskId = 0;
-    private static Map<Integer, BaseTask> tasks = new HashMap<>();
+    private int taskId = 0;
+    private Map<Integer, BaseTask> tasks = new HashMap<>();
 
     //вспомогательный метод
-    private static void addBaseTask(BaseTask task) {
+    private void addBaseTask(BaseTask task) {
         taskId++;
         task.setId(taskId);
         tasks.put(taskId, task);
     }
 
-    private static void ensureTaskIsTask(BaseTask task) {
+    private void ensureTaskIsTask(BaseTask task) {
         if (!task.getTaskType().equals(TaskType.TASK)) {
             throw new WrongTaskTypeException("Задача не является таском");
         }
     }
 
-    private static void EnsureTaskIsSubTask(BaseTask task) {
+    private void ensureTaskIsSubTask(BaseTask task) {
         if (!task.getTaskType().equals(TaskType.SUBTASK)) {
             throw new WrongTaskTypeException("Задача не является сабтаском");
         }
     }
 
-    private static void ensureTaskIsEpic(BaseTask task) {
+    private void ensureTaskIsEpic(BaseTask task) {
         if (!task.getTaskType().equals(TaskType.EPIC)) {
             throw new WrongTaskTypeException("Задача не является эпиком");
         }
     }
 
-    private static void updateStatusOfEpic(int epicId) {
+    private void updateStatusOfEpic(int epicId) {
         Epic epic = getEpic(epicId);
         updateStatusOfEpic(epic);
     }
 
-    private static void updateStatusOfEpic(Epic epic) {
-        List<Subtask> subtasks = TaskManager.getSubtasksOfEpic(epic.getId());
+    private void updateStatusOfEpic(Epic epic) {
+        List<Subtask> subtasks = getSubtasksOfEpic(epic.getId());
         if (subtasks.isEmpty() || subtasks
                 .stream()
                 .map(BaseTask::getStatus)
@@ -65,24 +65,24 @@ public class TaskManager {
     }
 
     //Методы, работающие с тасками всех типов
-    public static void clearTasksOfAnyType() {
+    public void clearTasksOfAnyType() {
         tasks = new HashMap<>();
         taskId = 0;
     }
 
-    public static List<BaseTask> getAllTasksOfAnyType() {
+    public List<BaseTask> getAllTasksOfAnyType() {
         return new ArrayList<>(tasks.values());
     }
 
 
-    public static BaseTask getTaskOfAnyType(int id) {
+    public BaseTask getTaskOfAnyType(int id) {
         if (!tasks.containsKey(id)) {
             throw new TaskNotFoundException("Не найден таск с id = " + id);
         }
         return tasks.get(id);
     }
 
-    public static void updateTaskOfAnyType(BaseTask task) {
+    public void updateTaskOfAnyType(BaseTask task) {
         tasks.put(task.getId(), task);
 
         //если таска является сабтаской, то найти её эпик и вызывать для него updateStatus
@@ -93,7 +93,7 @@ public class TaskManager {
     }
 
     //Методы, работающие с тасками определенного типа
-    public static void clearTasks() {
+    public void clearTasks() {
         tasks.keySet().forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
             if (task.getTaskType() == TaskType.TASK) {
@@ -102,7 +102,7 @@ public class TaskManager {
         });
     }
 
-    public static void clearSubTasks() {
+    public void clearSubTasks() {
         List<Integer> toRemove = new ArrayList<>();
         tasks.keySet().forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
@@ -123,7 +123,7 @@ public class TaskManager {
         });
     }
 
-    public static void clearEpics() {
+    public void clearEpics() {
         List<Integer> toRemove = new ArrayList<>();
         tasks.keySet().forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
@@ -134,25 +134,25 @@ public class TaskManager {
         toRemove.forEach((Integer id) -> tasks.remove(id));
     }
 
-    public static Epic getEpic(int epicId) {
+    public Epic getEpic(int epicId) {
         BaseTask task = getTaskOfAnyType(epicId);
         ensureTaskIsEpic(task);
         return (Epic) task;
     }
 
-    public static Task getTask(int taskId) {
+    public Task getTask(int taskId) {
         BaseTask task = getTaskOfAnyType(taskId);
         ensureTaskIsTask(task);
         return (Task) task;
     }
 
-    public static Subtask getSubtask(int subtaskId) {
+    public Subtask getSubtask(int subtaskId) {
         BaseTask task = getTaskOfAnyType(subtaskId);
-        EnsureTaskIsSubTask(task);
+        ensureTaskIsSubTask(task);
         return (Subtask) task;
     }
 
-    public static List<Subtask> getSubtasksOfEpic(int epicId) {
+    public List<Subtask> getSubtasksOfEpic(int epicId) {
         Epic epic = getEpic(epicId);
         List<Subtask> result = new ArrayList<>();
         for (int id : epic.getSubtasksIds()) {
@@ -163,7 +163,7 @@ public class TaskManager {
         return result;
     }
 
-    public static List<Task> getListTasks() {
+    public List<Task> getListTasks() {
         List<BaseTask> allTasks = getAllTasksOfAnyType();
         return allTasks
                 .stream()
@@ -172,7 +172,7 @@ public class TaskManager {
                 .toList();
     }
 
-    public static List<Epic> getListEpics() {
+    public List<Epic> getListEpics() {
         List<BaseTask> allTasks = getAllTasksOfAnyType();
         return allTasks
                 .stream()
@@ -181,7 +181,7 @@ public class TaskManager {
                 .toList();
     }
 
-    public static List<Subtask> getListSubtasks() {
+    public List<Subtask> getListSubtasks() {
         List<BaseTask> allTasks = getAllTasksOfAnyType();
         return allTasks
                 .stream()
@@ -190,16 +190,16 @@ public class TaskManager {
                 .toList();
     }
 
-    public static void add(Task task) {
+    public void add(Task task) {
         addBaseTask(task);
     }
 
-    public static void add(Epic epic) {
+    public void add(Epic epic) {
         epic.clearAllSubtaskIds();
         addBaseTask(epic);
     }
 
-    public static void add(Subtask subtask, int epicId) {
+    public void add(Subtask subtask, int epicId) {
         Epic epic = getEpic(epicId);
         subtask.setEpicId(epic.getId());
         addBaseTask(subtask);
@@ -207,13 +207,13 @@ public class TaskManager {
         updateStatusOfEpic(epic);
     }
 
-    public static void removeTask(int id) {
+    public void removeTask(int id) {
         BaseTask task = getTaskOfAnyType(id);
         ensureTaskIsTask(task);
         tasks.remove(id);
     }
 
-    public static void removeSubTask(int id) {
+    public void removeSubTask(int id) {
         Subtask subtask = getSubtask(id);
         tasks.remove(id);
         int epicId = subtask.getEpicId();
@@ -222,7 +222,7 @@ public class TaskManager {
         updateStatusOfEpic(subtask.getEpicId());
     }
 
-    public static void removeEpic(int id) {
+    public void removeEpic(int id) {
         BaseTask task = getTaskOfAnyType(id);
         ensureTaskIsEpic(task);
         tasks.remove(id);
@@ -233,34 +233,34 @@ public class TaskManager {
         });
     }
 
-    public static void remove(Task task) {
+    public void remove(Task task) {
         removeTask(task.getId());
     }
 
-    public static void remove(Epic epic) {
+    public void remove(Epic epic) {
         removeEpic(epic.getId());
     }
 
-    public static void remove(Subtask task) {
+    public void remove(Subtask task) {
         removeSubTask(task.getId());
     }
 
-    public static void setStatusOfTask(int taskId, Status status) {
+    public void setStatusOfTask(int taskId, Status status) {
         Task task = getTask(taskId);
         task.setStatus(status);
     }
 
-    public static void setStatusOfSubtask(int subtaskId, Status status) {
+    public void setStatusOfSubtask(int subtaskId, Status status) {
         Subtask subtask = getSubtask(subtaskId);
         subtask.setStatus(status);
         updateStatusOfEpic(subtask.getEpicId());
     }
 
-    public static void setStatus(Task task, Status status) {
+    public void setStatus(Task task, Status status) {
         setStatusOfTask(task.getId(), status);
     }
 
-    public static void setStatus(Subtask subtask, Status status) {
+    public void setStatus(Subtask subtask, Status status) {
         setStatusOfSubtask(subtask.getId(), status);
     }
 }
