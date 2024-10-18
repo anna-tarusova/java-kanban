@@ -3,8 +3,6 @@ package ru.yandex.practicum.tasks.model;
 import ru.yandex.practicum.tasks.model.enums.Status;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
-import java.util.Objects;
-
 public abstract class BaseTask {
     protected String name;
     protected String description;
@@ -55,7 +53,7 @@ public abstract class BaseTask {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BaseTask baseTask = (BaseTask) o;
-        return id == baseTask.id && Objects.equals(name, baseTask.name) && Objects.equals(description, baseTask.description) && status == baseTask.status;
+        return id == baseTask.id;
     }
 
     @Override
