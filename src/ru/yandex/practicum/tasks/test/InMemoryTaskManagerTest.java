@@ -264,7 +264,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getListTasksShouldReturnAllSubtasks() {
+    void getListTasksShouldReturnAllTasks() {
         //Arrange
         Task task1 = new Task("task1", "descr");
         Task task2 = new Task("task2", "descr");
@@ -293,7 +293,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getListEpicsShouldReturnAllEpic() {
+    void getListEpicsShouldReturnAllEpics() {
         //Arrange
         Task task1 = new Task("task1", "descr");
         Task task2 = new Task("task2", "descr");
@@ -475,7 +475,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void removeTaskShouldRemoveSubtask() {
+    void removeTaskShouldRemoveTask() {
         //Arrange
         Task task1 = new Task("task1", "descr1");
         Task task2 = new Task("task2", "descr2");
