@@ -54,8 +54,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (nodeToRemove.getNext() == null) {
             prev.setNext(null);
             last = prev;
-        }
-        else {
+        } else {
             Node next = nodeToRemove.getNext();
             prev.setNext(next);
             next.setPrev(prev);
