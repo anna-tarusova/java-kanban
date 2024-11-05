@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 public class InMemoryTaskManager implements TaskManager {
     private int taskId = 0;
     private Map<Integer, BaseTask> tasks = new HashMap<>();
-    private HistoryManager historyManager;
+    private final HistoryManager historyManager;
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
@@ -20,9 +20,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     //вспомогательный метод
     private void addBaseTask(BaseTask task) {
+        BaseTask copyTask = getCopyTask(task);
         taskId++;
         task.setId(taskId);
-        tasks.put(taskId, task);
+        copyTask.setId(taskId);
+        tasks.put(taskId, copyTask);
     }
 
     private void ensureTaskIsTask(BaseTask task) {
@@ -336,5 +338,27 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<BaseTask> getHistory() {
         return historyManager.getHistory();
+    }
+
+    public static BaseTask getCopyTask(BaseTask task) {
+        BaseTask copyTask = null;
+        if (task.getTaskType() == TaskType.TASK) {
+            copyTask = new Task(task.getName(), task.getDescription());
+        }
+        else if (task.getTaskType() == TaskType.SUBTASK) {
+            copyTask = new Subtask(task.getName(), task.getDescription());
+            ((Subtask)copyTask).setEpicId(((Subtask)task).getEpicId());
+        }
+        else if (task.getTaskType() == TaskType.EPIC) {
+            copyTask = new Epic(task.getName(), task.getDescription());
+        }
+
+        if (copyTask == null) {
+            throw new WrongTaskTypeException("Неизвестный тип таски");
+        }
+
+        copyTask.setId(task.getId());
+        copyTask.setStatus(task.getStatus());
+        return copyTask;
     }
 }

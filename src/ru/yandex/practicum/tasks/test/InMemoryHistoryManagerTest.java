@@ -27,8 +27,11 @@ class InMemoryHistoryManagerTest {
     void addShouldAddTaskToHistory() {
         //Arrange
         Task task = new Task("task1", "descr1");
+        task.setId(1);
         Epic epic = new Epic("task2", "descr2");
+        epic.setId(2);
         Subtask subtask = new Subtask("task3", "descr1");
+        subtask.setId(3);
 
         //Act
         inMemoryHistoryManager.add(task);
@@ -52,8 +55,11 @@ class InMemoryHistoryManagerTest {
     void getHistoryShouldReturnHistory() {
         //Arrange
         Task task = new Task("task1", "descr1");
+        task.setId(1);
         Epic epic = new Epic("task2", "descr2");
+        epic.setId(2);
         Subtask subtask = new Subtask("task3", "descr1");
+        subtask.setId(3);
         inMemoryHistoryManager.add(task);
         inMemoryHistoryManager.add(epic);
         inMemoryHistoryManager.add(subtask);
@@ -77,25 +83,23 @@ class InMemoryHistoryManagerTest {
 
 
     @Test
-    void getHistoryShouldBeAbleToReturnPreviousTask() {
+    void getHistoryShouldReturnLastVersionOfTask() {
         //Arrange
         Task task = new Task("task1", "descr1");
         TaskManager taskManager = new InMemoryTaskManager(inMemoryHistoryManager);
 
         //Act
+        taskManager.add(task);//присваиваем таске id
         inMemoryHistoryManager.add(task);
-        taskManager.add(task);
         taskManager.setStatus(task, Status.IN_PROGRESS);
+        task = taskManager.getTask(task.getId());
         inMemoryHistoryManager.add(task);
 
         //Assert
         List<BaseTask> history = inMemoryHistoryManager.getHistory();
-        assertEquals(2, history.size());
-        BaseTask firstTask = history.get(0);
-        assertEquals(Status.NEW, firstTask.getStatus());
-
-        BaseTask secondTask = history.get(1);
-        assertEquals(Status.IN_PROGRESS, secondTask.getStatus());
+        assertEquals(1, history.size());
+        BaseTask taskInHistory = history.get(0);
+        assertEquals(Status.IN_PROGRESS, taskInHistory.getStatus());
     }
 
     @Test
@@ -139,5 +143,49 @@ class InMemoryHistoryManagerTest {
         assertEquals(subtask1, firstTask);
         BaseTask secondTask = history.get(1);
         assertEquals(subtask2, secondTask);
+    }
+
+    @Test
+    void getHistoryShouldReturnOnlyLastTask() {
+        //Arrange
+        Task task = new Task("task1", "descr1");
+        Task task2 = new Task("task2", "descr2");
+
+        TaskManager taskManager = new InMemoryTaskManager(inMemoryHistoryManager);
+        taskManager.add(task);
+        taskManager.add(task2);
+
+        //Act
+        taskManager.getTask(task.getId());
+        taskManager.getTask(task2.getId());
+        taskManager.getTask(task.getId());
+
+        //Assert
+        List<BaseTask> history = inMemoryHistoryManager.getHistory();
+        assertEquals(2, history.size());
+        BaseTask firstTaskInHistory = history.get(0);
+        assertEquals(task2, firstTaskInHistory);
+        BaseTask secondTaskInHistory = history.get(1);
+        assertEquals(task, secondTaskInHistory);
+    }
+
+    @Test
+    void removeShouldDeleteTaskFromHistory() {
+        //Arrange
+        Task task = new Task("task1", "descr1");
+        task.setId(1);
+        Epic epic = new Epic("task2", "descr2");
+        epic.setId(2);
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(epic);
+
+        //Act
+        inMemoryHistoryManager.remove(epic.getId());
+
+        //Assert
+        List<BaseTask> history = inMemoryHistoryManager.getHistory();
+        assertEquals(1, history.size());
+        BaseTask firstTaskInHistory = history.get(0);
+        assertEquals(task, firstTaskInHistory);
     }
 }

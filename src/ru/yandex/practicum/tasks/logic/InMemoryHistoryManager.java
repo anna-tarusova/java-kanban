@@ -1,49 +1,64 @@
 package ru.yandex.practicum.tasks.logic;
 
-import ru.yandex.practicum.tasks.exceptions.WrongTaskTypeException;
 import ru.yandex.practicum.tasks.model.BaseTask;
-import ru.yandex.practicum.tasks.model.Epic;
-import ru.yandex.practicum.tasks.model.Subtask;
-import ru.yandex.practicum.tasks.model.Task;
-import ru.yandex.practicum.tasks.model.enums.TaskType;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 
-public class InMemoryHistoryManager implements HistoryManager {
+import static ru.yandex.practicum.tasks.logic.InMemoryTaskManager.getCopyTask;
 
-    public static final int MAX_HISTORY_SIZE = 10;
-    private List<BaseTask> history = new LinkedList<>();
+public class InMemoryHistoryManager implements HistoryManager {
+    private Node last = new Node();
+    private final Node head = last;
+    private final HashMap<Integer, Node> taskMap = new HashMap<>();
 
     @Override
     public void add(BaseTask task) {
-        BaseTask copyTask = null;
-        if (task.getTaskType() == TaskType.TASK) {
-            copyTask = new Task(task.getName(), task.getDescription());
-        }
-        else if (task.getTaskType() == TaskType.SUBTASK) {
-            copyTask = new Subtask(task.getName(), task.getDescription());
-        }
-        else if (task.getTaskType() == TaskType.EPIC) {
-            copyTask = new Epic(task.getName(), task.getDescription());
-        }
-
-        if (copyTask == null) {
-            throw new WrongTaskTypeException("Неизвестный тип таски");
-        }
-
-        copyTask.setId(task.getId());
-        copyTask.setStatus(task.getStatus());
-
-        if (history.size() == MAX_HISTORY_SIZE) {
-            history.removeFirst();
-        }
-        history.addLast(copyTask);
+        BaseTask copyTask = getCopyTask(task);
+        remove(copyTask.getId());
+        Node newNode = new Node(copyTask);
+        taskMap.put(copyTask.getId(), newNode);
+        linkLast(newNode);
     }
 
     @Override
     public List<BaseTask> getHistory() {
-        return new ArrayList<>(history);
+        ArrayList<BaseTask> result = new ArrayList<>();
+        Node node = head.getNext();
+        while (node != null) {
+            result.add(node.getData());
+            node = node.getNext();
+        }
+        return result;
+    }
+
+    @Override
+    public void remove(int id) {
+        Node nodeToRemove = taskMap.get(id);
+        if (nodeToRemove == null) {
+            return;
+        }
+        taskMap.remove(id);
+        remove(nodeToRemove);
+    }
+
+    private void linkLast(Node node) {
+        last.setNext(node);
+        node.setPrev(last);
+        last = node;
+    }
+
+    private void remove(Node nodeToRemove) {
+        Node prev = nodeToRemove.getPrev();
+        if (nodeToRemove.getNext() == null) {
+            prev.setNext(null);
+            last = prev;
+        }
+        else {
+            Node next = nodeToRemove.getNext();
+            prev.setNext(next);
+            next.setPrev(prev);
+        }
     }
 }
