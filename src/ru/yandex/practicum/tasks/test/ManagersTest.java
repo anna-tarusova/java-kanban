@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ManagersTest {
     private Managers managers;
+
     @BeforeEach()
     void setUp() {
         managers = new Managers();
