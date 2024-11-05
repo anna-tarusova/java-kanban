@@ -1,7 +1,6 @@
 package ru.yandex.practicum.tasks.test;
 
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.tasks.model.Epic;
 import ru.yandex.practicum.tasks.model.Subtask;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
