@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
     InMemoryHistoryManager inMemoryHistoryManager;
+
     @BeforeEach
     void setUp() {
         inMemoryHistoryManager = new InMemoryHistoryManager();
