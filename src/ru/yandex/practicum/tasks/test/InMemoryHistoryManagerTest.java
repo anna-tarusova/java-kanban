@@ -16,13 +16,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
+
     InMemoryHistoryManager inMemoryHistoryManager;
 
     @BeforeEach
     void setUp() {
         inMemoryHistoryManager = new InMemoryHistoryManager();
     }
-
 
     @Test
     void addShouldAddTaskToHistory() {
@@ -99,7 +99,7 @@ class InMemoryHistoryManagerTest {
         //Assert
         List<BaseTask> history = inMemoryHistoryManager.getHistory();
         assertEquals(1, history.size());
-        BaseTask taskInHistory = history.get(0);
+        BaseTask taskInHistory = history.getFirst();
         assertEquals(Status.IN_PROGRESS, taskInHistory.getStatus());
     }
 
@@ -116,7 +116,7 @@ class InMemoryHistoryManagerTest {
         //Assert
         List<BaseTask> history = inMemoryHistoryManager.getHistory();
         assertEquals(1, history.size());
-        BaseTask firstTask = history.get(0);
+        BaseTask firstTask = history.getFirst();
         assertEquals(task, firstTask);
     }
 
@@ -186,7 +186,7 @@ class InMemoryHistoryManagerTest {
         //Assert
         List<BaseTask> history = inMemoryHistoryManager.getHistory();
         assertEquals(1, history.size());
-        BaseTask firstTaskInHistory = history.get(0);
+        BaseTask firstTaskInHistory = history.getFirst();
         assertEquals(task, firstTaskInHistory);
     }
 }
