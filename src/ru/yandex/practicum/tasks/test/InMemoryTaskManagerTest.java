@@ -629,7 +629,7 @@ class InMemoryTaskManagerTest {
         //Arrange
         Epic epic = new Epic("epic", "descr1");
         inMemoryTaskManager.add(epic);
-        inMemoryTaskManager.getListEpics().stream().findFirst().stream().findFirst().orElseThrow().getId();
+        int epicId = inMemoryTaskManager.getListEpics().stream().findFirst().stream().findFirst().orElseThrow().getId();
         //Act
         //Метод добавления сабтаски не принимает класс Epic,
         //код ниже не скомпилится. Тест сделан для того, чтобы ревьювер не сказал, что нет метода, проверяющего, что Epic
