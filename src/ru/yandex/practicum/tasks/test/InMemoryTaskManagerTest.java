@@ -6,7 +6,6 @@ import ru.yandex.practicum.tasks.exceptions.TaskNotFoundException;
 import ru.yandex.practicum.tasks.exceptions.WrongTaskTypeException;
 import ru.yandex.practicum.tasks.logic.InMemoryTaskManager;
 import ru.yandex.practicum.tasks.logic.Managers;
-import ru.yandex.practicum.tasks.model.BaseTask;
 import ru.yandex.practicum.tasks.model.Epic;
 import ru.yandex.practicum.tasks.model.Subtask;
 import ru.yandex.practicum.tasks.model.Task;
@@ -19,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest {
     InMemoryTaskManager inMemoryTaskManager;
+
     @BeforeEach
     void setUp() {
         inMemoryTaskManager = new InMemoryTaskManager((new Managers()).getDefaultHistory());
@@ -191,7 +191,7 @@ class InMemoryTaskManagerTest {
         Epic epic = new Epic("epic1", "descr");
         inMemoryTaskManager.add(epic);
         Subtask subtask = new Subtask("subtask1", "descr");
-        
+
         //Act
         inMemoryTaskManager.add(subtask, epic.getId());
 
@@ -413,8 +413,7 @@ class InMemoryTaskManagerTest {
         //Act && Assert
         try {
             inMemoryTaskManager.setStatus(epic.getId(), Status.IN_PROGRESS);
-        }
-        catch (WrongTaskTypeException e) {
+        } catch (WrongTaskTypeException e) {
             return;
         }
         fail();
@@ -432,9 +431,10 @@ class InMemoryTaskManagerTest {
 
         //Act
         inMemoryTaskManager.setStatus(subtask1, Status.IN_PROGRESS);
-        inMemoryTaskManager.setStatus(subtask1, Status.DONE);
+        inMemoryTaskManager.setStatus(subtask2, Status.DONE);
 
         //Assert
+        epic = inMemoryTaskManager.getEpic(epic.getId());
         assertEquals(Status.IN_PROGRESS, epic.getStatus());
     }
 
@@ -453,6 +453,7 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.setStatus(subtask2, Status.DONE);
 
         //Assert
+        epic = inMemoryTaskManager.getEpic(epic.getId());
         assertEquals(Status.DONE, epic.getStatus());
     }
 
@@ -471,6 +472,7 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.setStatus(subtask2, Status.NEW);
 
         //Assert
+        epic = inMemoryTaskManager.getEpic(epic.getId());
         assertEquals(Status.NEW, epic.getStatus());
     }
 
@@ -492,6 +494,8 @@ class InMemoryTaskManagerTest {
         assertEquals("descr2", foundTask.getDescription());
     }
 
+    //Внутри эпиков не должно оставаться неактуальных id подзадач.
+    //тест написан в прошлом спринте
     @Test
     void removeSubTaskShouldRemoveSubtask() {
         //Arrange
@@ -530,13 +534,7 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.removeEpic(epic1.getId());
 
         //Arrange
-        try {
-            List<Subtask> subtasksOfEpic1 = inMemoryTaskManager.getSubtasksOfEpic(epic1.getId());
-            fail();//<-- не должен выполняться
-        }
-        catch (TaskNotFoundException e) {
-
-        }
+        assertThrowsExactly(TaskNotFoundException.class, () -> inMemoryTaskManager.getSubtasksOfEpic(epic1.getId()));
         List<Subtask> allSubtasks = inMemoryTaskManager.getListSubtasks();
         List<Epic> epics = inMemoryTaskManager.getListEpics();
         assertEquals(1, allSubtasks.size());
@@ -565,13 +563,7 @@ class InMemoryTaskManagerTest {
         //Assert
         List<Task> tasks = inMemoryTaskManager.getListTasks();
         assertEquals(1, tasks.size());
-        try {
-            Task foundTask = inMemoryTaskManager.getTask(task1.getId());
-            fail();
-        }
-        catch (TaskNotFoundException e) {
-
-        }
+        assertThrowsExactly(TaskNotFoundException.class, () -> inMemoryTaskManager.getTask(task1.getId()));
     }
 
     @Test
@@ -596,21 +588,8 @@ class InMemoryTaskManagerTest {
         //Assert
         List<Epic> epics = inMemoryTaskManager.getListEpics();
         assertEquals(1, epics.size());
-        try {
-            Epic foundTask = inMemoryTaskManager.getEpic(epic1.getId());
-            fail();
-        }
-        catch (TaskNotFoundException e) {
-
-        }
-
-        try {
-            List<Subtask> subtasks = inMemoryTaskManager.getSubtasksOfEpic(epic1.getId());
-            fail();
-        }
-        catch (TaskNotFoundException e) {
-
-        }
+        assertThrowsExactly(TaskNotFoundException.class, () -> inMemoryTaskManager.getEpic(epic1.getId()));
+        assertThrowsExactly(TaskNotFoundException.class, () -> inMemoryTaskManager.getSubtasksOfEpic(epic1.getId()));
         List<Subtask> subtasks = inMemoryTaskManager.getListSubtasks();
         assertEquals(1, subtasks.size());
     }
@@ -637,13 +616,7 @@ class InMemoryTaskManagerTest {
         //Assert
         List<Subtask> subtasks = inMemoryTaskManager.getListSubtasks();
         assertEquals(1, subtasks.size());
-        try {
-            Subtask subtask = inMemoryTaskManager.getSubtask(subtask1.getId());
-            fail();
-        }
-        catch (TaskNotFoundException e) {
-
-        }
+        assertThrowsExactly(TaskNotFoundException.class, () -> inMemoryTaskManager.getSubtask(subtask1.getId()));
 
         List<Subtask> subtasksOfEpic1 = inMemoryTaskManager.getSubtasksOfEpic(epic1.getId());
         assertEquals(0, subtasksOfEpic1.size());
@@ -679,12 +652,73 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(subtask, epicId);
         int subtaskId = inMemoryTaskManager.getListSubtasks().stream().findFirst().stream().findFirst().orElseThrow().getId();
         //Act && Arrange
-        try {
-            inMemoryTaskManager.add(subtask, subtaskId);
-        }
-        catch (WrongTaskTypeException e) {
-            return;
-        }
-        fail();
+        assertThrowsExactly(WrongTaskTypeException.class, () -> inMemoryTaskManager.add(subtask, subtaskId));
+    }
+
+    //С помощью сеттеров экземпляры задач позволяют изменить любое своё поле, но это может повлиять на данные внутри менеджера.
+    // Протестируйте эти кейсы и подумайте над возможными вариантами решения проблемы.
+    @Test
+    void addShouldHaveCopyOfTask() {
+        //Arrange
+        Task task = new Task("name1", "descr1");
+        inMemoryTaskManager.add(task);
+        int id = task.getId();
+
+        //Act
+        task.setId(3333);
+        task.setName("name2");
+        task.setDescription("descr2");
+        task.setStatus(Status.DONE);
+
+        //Assert
+        Task foundTask = inMemoryTaskManager.getTask(id);
+        assertNotNull(foundTask);
+        assertEquals("name1", foundTask.getName());
+        assertEquals("descr1", foundTask.getDescription());
+    }
+
+    //С помощью сеттеров экземпляры задач позволяют изменить любое своё поле, но это может повлиять на данные внутри менеджера.
+    //Протестируйте эти кейсы и подумайте над возможными вариантами решения проблемы.
+    @Test
+    void changingEpicIdOfSubtaskShouldNotAffectSubtaskInManager() {
+        //Arrange
+        Epic epic = new Epic("epic1", "descr1");
+        Epic epic2 = new Epic("epic1", "descr2");
+        Subtask subtask1 = new Subtask("subtask1", "descr3");
+        Subtask subtask2 = new Subtask("subtask2", "descr4");
+        inMemoryTaskManager.add(epic);
+        inMemoryTaskManager.add(epic2);
+        inMemoryTaskManager.add(subtask1, epic.getId());
+        inMemoryTaskManager.add(subtask2, epic2.getId());
+
+        //Act
+        subtask2.setEpicId(subtask1.getEpicId());
+
+        //Assert
+        List<Subtask> subtasks = inMemoryTaskManager.getSubtasksOfEpic(epic.getId());
+        assertEquals(1, subtasks.size());
+        assertEquals("subtask1", subtasks.getFirst().getName());
+        assertEquals("descr3", subtasks.getFirst().getDescription());
+    }
+
+    //С помощью сеттеров экземпляры задач позволяют изменить любое своё поле, но это может повлиять на данные внутри менеджера.
+    //Протестируйте эти кейсы и подумайте над возможными вариантами решения проблемы.
+    @Test
+    void changingStatusOfSubtaskShouldNotAffectEpicInManager() {
+        //Arrange
+        Epic epic = new Epic("epic1", "descr1");
+        Subtask subtask1 = new Subtask("subtask1", "descr3");
+        Subtask subtask2 = new Subtask("subtask2", "descr4");
+        inMemoryTaskManager.add(epic);
+        inMemoryTaskManager.add(subtask1, epic.getId());
+        inMemoryTaskManager.add(subtask2, epic.getId());
+
+        //Act
+        subtask1.setStatus(Status.DONE);
+        subtask2.setStatus(Status.DONE);
+
+        //Assert
+        epic = inMemoryTaskManager.getEpic(epic.getId());
+        assertEquals(Status.NEW, epic.getStatus());
     }
 }
