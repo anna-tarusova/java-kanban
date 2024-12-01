@@ -7,12 +7,11 @@ import ru.yandex.practicum.tasks.model.enums.Status;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class InMemoryTaskManager implements TaskManager {
     private int taskId = 0;
     private Map<Integer, BaseTask> tasks = new HashMap<>();
-    private HistoryManager historyManager;
+    private final HistoryManager historyManager;
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
@@ -148,9 +147,7 @@ public class InMemoryTaskManager implements TaskManager {
             tasks.values()
                 .stream()
                 .filter(t -> t.getTaskType() == TaskType.SUBTASK && ((Subtask)t).getEpicId() == id)
-                .forEach(t -> {
-                    toRemove.add(t.getId());
-                });
+                .forEach(t -> toRemove.add(t.getId()));
         }
 
         toRemove.forEach(id -> tasks.remove(id));
@@ -189,7 +186,7 @@ public class InMemoryTaskManager implements TaskManager {
         for (int id : getAllTasksOfAnyType()
                 .stream()
                 .filter(bt -> bt.getTaskType() == TaskType.SUBTASK && ((Subtask)bt).getEpicId() == epic.getId())
-                .map(st -> st.getId())
+                .map(BaseTask::getId)
                 .toList()) {
             Subtask subtask = (Subtask) tasks.get(id);
             historyManager.add(subtask);
@@ -277,9 +274,7 @@ public class InMemoryTaskManager implements TaskManager {
         ensureTaskIsEpic(task);
 
         List<Subtask> subtasks = getSubtasksOfEpic(id);
-        subtasks.forEach((Subtask subtask) -> {
-            tasks.remove(subtask.getId());
-        });
+        subtasks.forEach((Subtask subtask) -> tasks.remove(subtask.getId()));
         tasks.remove(id);
     }
 
