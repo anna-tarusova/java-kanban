@@ -20,9 +20,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     //вспомогательный метод
     private void addBaseTask(BaseTask task) {
-        taskId++;
-        task.setId(taskId);
-        tasks.put(taskId, task);
+        BaseTask copyTask = getCopyTask(task);
+        if (copyTask.getId() == 0) {
+            taskId++;
+            copyTask.setId(taskId);
+            task.setId(copyTask.getId());
+        }
+        tasks.put(copyTask.getId(), copyTask);
     }
 
     private void ensureTaskIsTask(BaseTask task) {
@@ -43,7 +47,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private List<BaseTask> getAllTasksOfAnyType() {
+    protected List<BaseTask> getAllTasksOfAnyType() {
         return new ArrayList<>(tasks.values());
     }
 
@@ -336,5 +340,25 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<BaseTask> getHistory() {
         return historyManager.getHistory();
+    }
+
+    public static BaseTask getCopyTask(BaseTask task) {
+        BaseTask copyTask = null;
+        if (task.getTaskType() == TaskType.TASK) {
+            copyTask = new Task(task.getName(), task.getDescription());
+        } else if (task.getTaskType() == TaskType.SUBTASK) {
+            copyTask = new Subtask(task.getName(), task.getDescription());
+            ((Subtask)copyTask).setEpicId(((Subtask)task).getEpicId());
+        } else if (task.getTaskType() == TaskType.EPIC) {
+            copyTask = new Epic(task.getName(), task.getDescription());
+        }
+
+        if (copyTask == null) {
+            throw new WrongTaskTypeException("Неизвестный тип таски");
+        }
+
+        copyTask.setId(task.getId());
+        copyTask.setStatus(task.getStatus());
+        return copyTask;
     }
 }

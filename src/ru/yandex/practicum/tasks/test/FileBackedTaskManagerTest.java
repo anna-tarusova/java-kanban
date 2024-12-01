@@ -36,7 +36,7 @@ public class FileBackedTaskManagerTest {
     public void createFromFileWithOneEpicShouldCreateFileBackedManagerWithOneEpic() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
-        try(FileWriter fw = new FileWriter(file)) {
+        try (FileWriter fw = new FileWriter(file)) {
             fw.write("7,EPIC,epic1,DONE,descr");
         }
 
@@ -62,7 +62,7 @@ public class FileBackedTaskManagerTest {
     public void createFromFileWithOneEpicWithSubtaskShouldCreateFileBackedManagerWithOneEpicWithSubtask() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
-        try(FileWriter fw = new FileWriter(file)) {
+        try (FileWriter fw = new FileWriter(file)) {
             fw.write("6,EPIC,epic1,IN_PROGRESS,descr1\n");
             fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,6\n");
         }
@@ -79,13 +79,13 @@ public class FileBackedTaskManagerTest {
         assertEquals(1, subtasks.size());
 
         assertEquals(1, epics.size());
-        Epic epic = epics.get(0);
+        Epic epic = epics.getFirst();
         assertEquals(6, epic.getId());
         assertEquals("epic1", epic.getName());
         assertEquals(Status.IN_PROGRESS, epic.getStatus());
         assertEquals("descr1", epic.getDescription());
 
-        Subtask subtask = subtasks.get(0);
+        Subtask subtask = subtasks.getFirst();
         assertEquals(7, subtask.getId());
         assertEquals("subtask1", subtask.getName());
         assertEquals(Status.IN_PROGRESS, subtask.getStatus());
@@ -97,7 +97,7 @@ public class FileBackedTaskManagerTest {
     public void createFromFileWithSubtaskOfUnexistingEpicShouldThrowException() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
-        try(FileWriter fw = new FileWriter(file)) {
+        try (FileWriter fw = new FileWriter(file)) {
             fw.write("6,EPIC,epic1,IN_PROGRESS,descr1\n");
             fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,99999\n");
         }
@@ -110,7 +110,7 @@ public class FileBackedTaskManagerTest {
     public void createFromFileWithSubtaskWhichIsBeforeEpicShouldCreateWithoudException() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
-        try(FileWriter fw = new FileWriter(file)) {
+        try (FileWriter fw = new FileWriter(file)) {
             fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,6\n");
             fw.write("6,EPIC,epic1,IN_PROGRESS,descr1\n");
 
@@ -124,7 +124,7 @@ public class FileBackedTaskManagerTest {
     public void createFromFileWithOnlySubtaskShouldThrowException() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
-        try(FileWriter fw = new FileWriter(file)) {
+        try (FileWriter fw = new FileWriter(file)) {
             fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,99999\n");
         }
 
@@ -136,7 +136,7 @@ public class FileBackedTaskManagerTest {
     public void createFromFileWithTaskShouldCreateFileBackedTaskManagerWithThisTask() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
-        try(FileWriter fw = new FileWriter(file)) {
+        try (FileWriter fw = new FileWriter(file)) {
             fw.write("7,TASK,task1,IN_PROGRESS,descr4\n");
         }
 
@@ -168,7 +168,7 @@ public class FileBackedTaskManagerTest {
         fileBackedTaskManager.add(new Task("task1", "descr1"));
 
         //Assert
-        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
             assertEquals("1,TASK,task1,NEW,descr1", line);
         }
@@ -184,7 +184,7 @@ public class FileBackedTaskManagerTest {
         fileBackedTaskManager.add(new Epic("epic1", "descr1"));
 
         //Assert
-        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
             assertEquals("1,EPIC,epic1,NEW,descr1", line);
         }
@@ -204,7 +204,7 @@ public class FileBackedTaskManagerTest {
 
 
         //Assert
-        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
             assertEquals("1,EPIC,epic1,NEW,descr1", line);
             line = br.readLine();
@@ -250,30 +250,30 @@ public class FileBackedTaskManagerTest {
 
         List<Epic> epics = fileBackedTaskManager2.getListEpics();
         assertEquals(3, epics.size());
-        Epic epic1_ = epics.stream().filter(e -> e.getName().equals("epic1")).toList().getFirst();
-        assertEquals("descr1", epic1_.getDescription());
-        assertEquals(Status.NEW, epic1_.getStatus());
+        Epic epic1ForAssert = epics.stream().filter(e -> e.getName().equals("epic1")).toList().getFirst();
+        assertEquals("descr1", epic1ForAssert.getDescription());
+        assertEquals(Status.NEW, epic1ForAssert.getStatus());
 
-        Epic epic2_ = epics.stream().filter(e -> e.getName().equals("epic2")).toList().getFirst();
-        assertEquals("descr2", epic2_.getDescription());
-        assertEquals(Status.IN_PROGRESS, epic2_.getStatus());
+        Epic epic2ForAssert = epics.stream().filter(e -> e.getName().equals("epic2")).toList().getFirst();
+        assertEquals("descr2", epic2ForAssert.getDescription());
+        assertEquals(Status.IN_PROGRESS, epic2ForAssert.getStatus());
 
-        Epic epic3_ = epics.stream().filter(e -> e.getName().equals("epic3")).toList().getFirst();
-        assertEquals("descr3", epic3_.getDescription());
-        assertEquals(Status.NEW, epic3_.getStatus());
+        Epic epic3ForAssert = epics.stream().filter(e -> e.getName().equals("epic3")).toList().getFirst();
+        assertEquals("descr3", epic3ForAssert.getDescription());
+        assertEquals(Status.NEW, epic3ForAssert.getStatus());
 
         List<Subtask> subtasks = fileBackedTaskManager2.getListSubtasks();
         assertEquals(3, subtasks.size());
-        Subtask subtask1_ = subtasks.stream().filter(st -> st.getName().equals("subtask1")).toList().getFirst();
-        assertEquals("descr4", subtask1_.getDescription());
-        assertEquals(Status.NEW, subtask1_.getStatus());
+        Subtask subtask1ForAssert = subtasks.stream().filter(st -> st.getName().equals("subtask1")).toList().getFirst();
+        assertEquals("descr4", subtask1ForAssert.getDescription());
+        assertEquals(Status.NEW, subtask1ForAssert.getStatus());
 
-        Subtask subtask2_ = subtasks.stream().filter(st -> st.getName().equals("subtask2")).toList().getFirst();
-        assertEquals("descr5", subtask2_.getDescription());
-        assertEquals(Status.IN_PROGRESS, subtask2_.getStatus());
+        Subtask subtask2ForAssert = subtasks.stream().filter(st -> st.getName().equals("subtask2")).toList().getFirst();
+        assertEquals("descr5", subtask2ForAssert.getDescription());
+        assertEquals(Status.IN_PROGRESS, subtask2ForAssert.getStatus());
 
-        Subtask subtask3_ = subtasks.stream().filter(st -> st.getName().equals("subtask3")).toList().getFirst();
-        assertEquals("descr6", subtask3_.getDescription());
-        assertEquals(Status.NEW, subtask3_.getStatus());
+        Subtask subtask3ForAssert = subtasks.stream().filter(st -> st.getName().equals("subtask3")).toList().getFirst();
+        assertEquals("descr6", subtask3ForAssert.getDescription());
+        assertEquals(Status.NEW, subtask3ForAssert.getStatus());
     }
 }

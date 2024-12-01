@@ -23,7 +23,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file.getAbsolutePath(), new InMemoryHistoryManager());
         List<String> lines = new ArrayList<>();
-        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 lines.add(line);
@@ -35,12 +35,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         List<BaseTask> baseTasks = lines.stream().map(BaseTask::fromString).toList();
         //сначала восстанавливаем эпики и только потом сабтаски (так как они кладутся в эпики)
         //таски сами по себе, поэтому можно восстановить их первым или последними
-        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.TASK).forEach(bt -> {
-            fileBackedTaskManager.add((Task) bt);
-        });
-        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.EPIC).forEach(bt -> {
-            fileBackedTaskManager.add((Epic) bt);
-        });
+        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.TASK).forEach(bt -> fileBackedTaskManager.add((Task) bt));
+        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.EPIC).forEach(bt -> fileBackedTaskManager.add((Epic) bt));
         baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.SUBTASK).forEach(bt -> {
             Subtask st = (Subtask)bt;
             fileBackedTaskManager.add(st, st.getEpicId());
