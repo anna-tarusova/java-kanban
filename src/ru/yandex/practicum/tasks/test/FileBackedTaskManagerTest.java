@@ -14,6 +14,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FileBackedTaskManagerTest {
+
     @Test
     public void createFromEmptyFileShouldCreateEmptyFileBackedManager() throws IOException {
         //Arrange
@@ -50,7 +51,7 @@ public class FileBackedTaskManagerTest {
 
         assertEquals(0, tasks.size());
         assertEquals(1, epics.size());
-        Epic epic = epics.get(0);
+        Epic epic = epics.getFirst();
         assertEquals(7, epic.getId());
         assertEquals("epic1", epic.getName());
         assertEquals(Status.DONE, epic.getStatus());
@@ -149,7 +150,7 @@ public class FileBackedTaskManagerTest {
         List<Subtask> subtasks = fileBackedTaskManager.getListSubtasks();
 
         assertEquals(1, tasks.size());
-        Task task = tasks.get(0);
+        Task task = tasks.getFirst();
         assertEquals(7, task.getId());
         assertEquals("task1", task.getName());
         assertEquals(Status.IN_PROGRESS, task.getStatus());
