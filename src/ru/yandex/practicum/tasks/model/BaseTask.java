@@ -34,50 +34,34 @@ public abstract class BaseTask {
 
         try {
             id = Integer.parseInt(groups[0]);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new ManagerLoadException("Неправильный формат данных: первое поле должно быть целым числом!");
         }
         String typeTaskStr = groups[1];
-        TaskType taskType;
-        switch (typeTaskStr) {
-            case "TASK":
-                taskType = TaskType.TASK;
-                break;
-            case "SUBTASK":
-                taskType = TaskType.SUBTASK;
-                break;
-            case "EPIC":
-                taskType = TaskType.EPIC;
-                break;
-            default:
-                throw new ManagerLoadException("Неправильный формат данных: второе поле должно быть EPIC, SUBTASK или TASK");
-        }
+        TaskType taskType = switch (typeTaskStr) {
+            case "TASK" -> TaskType.TASK;
+            case "SUBTASK" -> TaskType.SUBTASK;
+            case "EPIC" -> TaskType.EPIC;
+            default ->
+                    throw new ManagerLoadException("Неправильный формат данных: второе поле должно быть EPIC, SUBTASK или TASK");
+        };
 
         String name = groups[2];
         String statusStr = groups[3];
-        Status status;
-        switch (statusStr) {
-            case "NEW":
-                status = Status.NEW;
-                break;
-            case "IN_PROGRESS":
-                status = Status.IN_PROGRESS;
-                break;
-            case "DONE":
-                status = Status.DONE;
-                break;
-            default:
-                throw new ManagerLoadException("Неправильный формат данных: четвертое поле должно быть NEW, IN_PROGRESS или DONE");
-        }
+        Status status = switch (statusStr) {
+            case "NEW" -> Status.NEW;
+            case "IN_PROGRESS" -> Status.IN_PROGRESS;
+            case "DONE" -> Status.DONE;
+            default ->
+                    throw new ManagerLoadException("Неправильный формат данных: четвертое поле должно быть NEW, IN_PROGRESS или DONE");
+        };
 
         String description = groups[4];
         Integer epicId = null;
         if (taskType == TaskType.SUBTASK) {
             try {
                 epicId = Integer.parseInt(groups[5]);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 throw new ManagerLoadException("Неправильный формат данных: первое поле должно быть целым числом!");
             }
         }
