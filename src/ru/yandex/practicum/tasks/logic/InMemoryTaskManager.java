@@ -7,11 +7,12 @@ import ru.yandex.practicum.tasks.model.enums.Status;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class InMemoryTaskManager implements TaskManager {
     private int taskId = 0;
     private Map<Integer, BaseTask> tasks = new HashMap<>();
-    private final HistoryManager historyManager;
+    private HistoryManager historyManager;
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
@@ -19,11 +20,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     //вспомогательный метод
     private void addBaseTask(BaseTask task) {
-        if (task.getId() == 0) {
-            taskId++;
-            task.setId(taskId);
-        }
-        tasks.put(task.getId(), task);
+        taskId++;
+        task.setId(taskId);
+        tasks.put(taskId, task);
     }
 
     private void ensureTaskIsTask(BaseTask task) {
@@ -44,7 +43,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    protected List<BaseTask> getAllTasksOfAnyType() {
+    private List<BaseTask> getAllTasksOfAnyType() {
         return new ArrayList<>(tasks.values());
     }
 
@@ -186,7 +185,7 @@ public class InMemoryTaskManager implements TaskManager {
         for (int id : getAllTasksOfAnyType()
                 .stream()
                 .filter(bt -> bt.getTaskType() == TaskType.SUBTASK && ((Subtask)bt).getEpicId() == epic.getId())
-                .map(BaseTask::getId)
+                .map(st -> st.getId())
                 .toList()) {
             Subtask subtask = (Subtask) tasks.get(id);
             historyManager.add(subtask);
