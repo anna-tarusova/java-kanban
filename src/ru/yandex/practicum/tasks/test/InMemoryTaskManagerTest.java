@@ -6,7 +6,6 @@ import ru.yandex.practicum.tasks.exceptions.TaskNotFoundException;
 import ru.yandex.practicum.tasks.exceptions.WrongTaskTypeException;
 import ru.yandex.practicum.tasks.logic.InMemoryTaskManager;
 import ru.yandex.practicum.tasks.logic.Managers;
-import ru.yandex.practicum.tasks.model.BaseTask;
 import ru.yandex.practicum.tasks.model.Epic;
 import ru.yandex.practicum.tasks.model.Subtask;
 import ru.yandex.practicum.tasks.model.Task;
@@ -118,7 +117,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void addShouldSetNewIdForTask() {
+    void addShouldSetKeepIdForTask() {
         //Arrange
         Task task = new Task("task1", "descr");
         task.setId(999999);
@@ -127,11 +126,11 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(task);
 
         //Assert
-        assertEquals(1, task.getId());
+        assertEquals(999999, task.getId());
     }
 
     @Test
-    void addShouldSetNewIdForEpic() {
+    void addShouldKeepIdForEpic() {
         //Arrange
         Epic epic = new Epic("epic", "descr");
         epic.setId(999999);
@@ -140,11 +139,11 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic);
 
         //Assert
-        assertEquals(1, epic.getId());
+        assertEquals(999999, epic.getId());
     }
 
     @Test
-    void addShouldSetNewIdForSubtask() {
+    void addShouldSetKeepIdForSubtask() {
         //Arrange
         Epic epic = new Epic("epic", "descr");
         Subtask subtask = new Subtask("subtask", "descr");
@@ -156,7 +155,7 @@ class InMemoryTaskManagerTest {
 
 
         //Assert
-        assertEquals(2, subtask.getId());
+        assertEquals(99999, subtask.getId());
     }
 
     @Test
@@ -205,8 +204,8 @@ class InMemoryTaskManagerTest {
         //Фраза из ТЗ:
         //"проверьте, что задачи с заданным id и сгенерированным id не конфликтуют внутри менеджера;"
         //Arrange
-        Task task1 = new Task("abc1", "descr");
-        Task task2 = new Task("abc2", "descr");
+        Task task1 = new Task("abc1", "descr1");
+        Task task2 = new Task("abc2", "descr2");
 
         //Act
         inMemoryTaskManager.add(task1);
@@ -214,8 +213,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(task2);
 
         //Assert
-        assertEquals(1, task1.getId());
-        assertEquals(2, task2.getId());
+        List<Task> tasks = inMemoryTaskManager.getListTasks();
+        assertEquals(1, tasks.size());
+        Task task = tasks.get(0);
+        assertEquals(1, task.getId());
+        assertEquals("abc2", task.getName());
+        assertEquals("descr2", task.getDescription());
     }
 
     @Test

@@ -30,6 +30,9 @@ public class Main {
 
         taskManager.add(subtask3, epic2.getId());
 
+        System.out.println(subtask3.toString());
+        System.out.println(epic2.toString());
+
 
         System.out.println(taskManager.getListEpics());
         System.out.println(taskManager.getSubtasksOfEpic(epic1.getId()));
