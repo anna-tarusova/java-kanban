@@ -80,11 +80,9 @@ public class InMemoryTaskManager implements TaskManager {
 
         if (subtasksOfEpic.stream().allMatch(t -> t.getStatus() == Status.NEW)) {
             epic.setStatus(Status.NEW);
-        }
-        else if (subtasksOfEpic.stream().allMatch(t -> t.getStatus() == Status.DONE)) {
+        } else if (subtasksOfEpic.stream().allMatch(t -> t.getStatus() == Status.DONE)) {
             epic.setStatus(Status.DONE);
-        }
-        else {
+        } else {
             epic.setStatus(Status.IN_PROGRESS);
         }
     }
@@ -312,11 +310,9 @@ public class InMemoryTaskManager implements TaskManager {
 
             if (subtasksOfEpic.stream().allMatch(st -> st.getStatus() == Status.NEW)) {
                 epic.setStatus(Status.NEW);
-            }
-            else if (subtasksOfEpic.stream().allMatch(st -> st.getStatus() == Status.DONE)) {
+            } else if (subtasksOfEpic.stream().allMatch(st -> st.getStatus() == Status.DONE)) {
                 epic.setStatus(Status.DONE);
-            }
-            else {
+            } else {
                 epic.setStatus(Status.IN_PROGRESS);
             }
         }
