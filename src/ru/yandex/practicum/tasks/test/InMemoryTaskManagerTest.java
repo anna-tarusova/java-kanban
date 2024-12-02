@@ -118,7 +118,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void addShouldSetKeepIdForTask() {
+    void addShouldKeepIdForTask() {
         //Arrange
         Task task = new Task("task1", "descr");
         task.setId(999999);
@@ -216,7 +216,7 @@ class InMemoryTaskManagerTest {
         //Assert
         List<Task> tasks = inMemoryTaskManager.getListTasks();
         assertEquals(1, tasks.size());
-        Task task = tasks.get(0);
+        Task task = tasks.getFirst();
         assertEquals(1, task.getId());
         assertEquals("abc2", task.getName());
         assertEquals("descr2", task.getDescription());
