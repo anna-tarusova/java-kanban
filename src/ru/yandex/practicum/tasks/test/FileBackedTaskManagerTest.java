@@ -108,7 +108,7 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void createFromFileWithSubtaskWhichIsBeforeEpicShouldCreateWithoudException() throws IOException {
+    public void createFromFileWithSubtaskWhichIsBeforeEpicShouldCreateWithoutException() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
