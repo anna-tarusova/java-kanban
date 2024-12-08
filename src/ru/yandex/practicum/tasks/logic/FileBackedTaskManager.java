@@ -46,10 +46,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         baseTasks.stream().filter(task -> task.getTaskType() == TaskType.SUBTASK).forEach(fileBackedTaskManager::put);
 
         //устанавливаем новое значение счетчика (максимальное значение счетчика из файла + 1)
-        int nextId = 1;
-        if (!baseTasks.isEmpty()) {
-            nextId = baseTasks.stream().map(BaseTask::getId).reduce(Integer.MIN_VALUE, Integer::max) + 1;
-        }
+        int nextId = baseTasks.stream().map(BaseTask::getId).reduce(0, Integer::max) + 1;
         fileBackedTaskManager.setStartNextId(nextId);
 
         return fileBackedTaskManager;
