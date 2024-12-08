@@ -65,9 +65,9 @@ public class InMemoryTaskManager implements TaskManager {
     //Метод нужен при восстановлении тасок из какого-то источника
     protected void put(BaseTask task) {
         if (task.getTaskType() == TaskType.SUBTASK) {
-            Subtask st = (Subtask) task;
-            if (!tasks.containsKey(st.getEpicId())) {
-                throw new TaskNotFoundException(String.format("Не существует эпика с id = %d", st.getEpicId()));
+            Subtask subtask = (Subtask) task;
+            if (!tasks.containsKey(subtask.getEpicId())) {
+                throw new TaskNotFoundException(String.format("Не существует эпика с id = %d", subtask.getEpicId()));
             }
         }
         if (tasks.containsKey(task.getId())) {
