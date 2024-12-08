@@ -1,6 +1,7 @@
 package ru.yandex.practicum.tasks.test;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.tasks.exceptions.ManagerLoadException;
 import ru.yandex.practicum.tasks.exceptions.TaskNotFoundException;
 import ru.yandex.practicum.tasks.logic.FileBackedTaskManager;
 import ru.yandex.practicum.tasks.model.Epic;
@@ -283,7 +284,7 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void AfterLoadingFromFileIdShouldBeGreaterThanMaxIdInFile() throws IOException {
+    public void afterLoadingFromFileIdShouldBeGreaterThanMaxIdInFile() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
@@ -299,5 +300,18 @@ public class FileBackedTaskManagerTest {
         assertEquals(2, tasks.size());
         Task task2 = tasks.stream().filter(t -> t.getName().equals("task2")).findFirst().orElseThrow();
         assertEquals(10000, task2.getId());
+    }
+
+    @Test
+    public void loadingFromFileWithTwoSameIdsShouldThrowException() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("1,TASK,task1,IN_PROGRESS,descr1\n");
+            fw.write("1,TASK,task2,IN_PROGRESS,descr2\n");
+        }
+
+        //Act & Assert
+        assertThrows(ManagerLoadException.class, () -> FileBackedTaskManager.loadFromFile(file));
     }
 }

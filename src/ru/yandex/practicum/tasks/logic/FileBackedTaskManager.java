@@ -41,9 +41,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
         //сначала восстанавливаем эпики и только потом сабтаски (так как они кладутся в эпики)
         //таски сами по себе, поэтому можно восстановить их первым или последними
-        baseTasks.stream().filter(task -> task.getTaskType() == TaskType.TASK).forEach(fileBackedTaskManager::put);
-        baseTasks.stream().filter(task -> task.getTaskType() == TaskType.EPIC).forEach(fileBackedTaskManager::put);
-        baseTasks.stream().filter(task -> task.getTaskType() == TaskType.SUBTASK).forEach(fileBackedTaskManager::put);
+
+        try {
+            baseTasks.stream().filter(task -> task.getTaskType() == TaskType.TASK).forEach(fileBackedTaskManager::put);
+            baseTasks.stream().filter(task -> task.getTaskType() == TaskType.EPIC).forEach(fileBackedTaskManager::put);
+            baseTasks.stream().filter(task -> task.getTaskType() == TaskType.SUBTASK).forEach(fileBackedTaskManager::put);
+        }
+        catch (IllegalStateException e) {
+            throw new ManagerLoadException(e.getMessage());
+        }
 
         //устанавливаем новое значение счетчика (максимальное значение счетчика из файла + 1)
         int nextId = baseTasks.stream().map(BaseTask::getId).reduce(0, Integer::max) + 1;
