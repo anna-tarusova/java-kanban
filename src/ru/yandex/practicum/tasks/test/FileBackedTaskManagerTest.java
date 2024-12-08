@@ -201,7 +201,8 @@ public class FileBackedTaskManagerTest {
         Epic epic = new Epic("epic1", "descr1");
         fileBackedTaskManager.add(epic);
         Subtask subtask = new Subtask("subtask1", "descr1");
-        fileBackedTaskManager.add(subtask, epic.getId());
+        subtask.setEpicId(epic.getId());
+        fileBackedTaskManager.add(subtask);
 
 
         //Assert
@@ -232,9 +233,12 @@ public class FileBackedTaskManagerTest {
         fileBackedTaskManager.add(epic1);
         fileBackedTaskManager.add(epic2);
         fileBackedTaskManager.add(epic3);
-        fileBackedTaskManager.add(subtask1, epic1.getId());
-        fileBackedTaskManager.add(subtask2, epic2.getId());
-        fileBackedTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        fileBackedTaskManager.add(subtask1);
+        subtask2.setEpicId(epic2.getId());
+        fileBackedTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        fileBackedTaskManager.add(subtask3);
         fileBackedTaskManager.add(task);
         fileBackedTaskManager.setStatus(task.getId(), Status.IN_PROGRESS);
         fileBackedTaskManager.setStatus(subtask2.getId(), Status.IN_PROGRESS);
@@ -276,5 +280,24 @@ public class FileBackedTaskManagerTest {
         Subtask subtask3ForAssert = subtasks.stream().filter(st -> st.getName().equals("subtask3")).toList().getFirst();
         assertEquals("descr6", subtask3ForAssert.getDescription());
         assertEquals(Status.NEW, subtask3ForAssert.getStatus());
+    }
+
+    @Test
+    public void AfterLoadingFromFileIdShouldBeGreaterThanMaxIdInFile() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("9999,TASK,task1,IN_PROGRESS,descr2\n");
+        }
+
+        //Act
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+        fileBackedTaskManager.add(new Task("task2", "descr"));
+
+        //Assert
+        List<Task> tasks = fileBackedTaskManager.getListTasks();
+        assertEquals(2, tasks.size());
+        Task task2 = tasks.stream().filter(t -> t.getName().equals("task2")).findFirst().orElseThrow();
+        assertEquals(10000, task2.getId());
     }
 }

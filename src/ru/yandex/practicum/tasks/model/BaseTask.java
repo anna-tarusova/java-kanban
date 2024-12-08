@@ -1,6 +1,5 @@
 package ru.yandex.practicum.tasks.model;
 
-import ru.yandex.practicum.tasks.exceptions.ManagerLoadException;
 import ru.yandex.practicum.tasks.model.enums.Status;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
@@ -24,10 +23,10 @@ public abstract class BaseTask {
     public static BaseTask fromString(String value) {
         String[] groups = value.split(",");
         if (groups.length < 5) {
-            throw new ManagerLoadException("Неправильный формат данных");
+            throw new IllegalStateException("Неправильный формат данных");
         }
         if (groups[1].equals(TaskType.SUBTASK.toString()) && groups.length < 6) {
-            throw new ManagerLoadException("Неправильный формат данных: для subtask должно быть 6 полей");
+            throw new IllegalStateException("Неправильный формат данных: для subtask должно быть 6 полей");
         }
 
         int id;
@@ -35,7 +34,7 @@ public abstract class BaseTask {
         try {
             id = Integer.parseInt(groups[0]);
         } catch (NumberFormatException e) {
-            throw new ManagerLoadException("Неправильный формат данных: первое поле должно быть целым числом!");
+            throw new IllegalStateException("Неправильный формат данных: первое поле должно быть целым числом!");
         }
         String typeTaskStr = groups[1];
         TaskType taskType = switch (typeTaskStr) {
@@ -43,7 +42,7 @@ public abstract class BaseTask {
             case "SUBTASK" -> TaskType.SUBTASK;
             case "EPIC" -> TaskType.EPIC;
             default ->
-                    throw new ManagerLoadException("Неправильный формат данных: второе поле должно быть EPIC, SUBTASK или TASK");
+                    throw new IllegalStateException("Неправильный формат данных: второе поле должно быть EPIC, SUBTASK или TASK");
         };
 
         String name = groups[2];
@@ -53,7 +52,7 @@ public abstract class BaseTask {
             case "IN_PROGRESS" -> Status.IN_PROGRESS;
             case "DONE" -> Status.DONE;
             default ->
-                    throw new ManagerLoadException("Неправильный формат данных: четвертое поле должно быть NEW, IN_PROGRESS или DONE");
+                    throw new IllegalStateException("Неправильный формат данных: четвертое поле должно быть NEW, IN_PROGRESS или DONE");
         };
 
         String description = groups[4];
@@ -62,7 +61,7 @@ public abstract class BaseTask {
             try {
                 epicId = Integer.parseInt(groups[5]);
             } catch (NumberFormatException e) {
-                throw new ManagerLoadException("Неправильный формат данных: первое поле должно быть целым числом!");
+                throw new IllegalStateException("Неправильный формат данных: первое поле должно быть целым числом!");
             }
         }
 

@@ -39,9 +39,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         inMemoryTaskManager.clearTasks();
@@ -70,9 +73,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         inMemoryTaskManager.clearSubTasks();
@@ -101,9 +107,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         inMemoryTaskManager.clearEpics();
@@ -115,48 +124,6 @@ class InMemoryTaskManagerTest {
         assertEquals(0, allEpics.size());
         List<Subtask> allSubtasks = inMemoryTaskManager.getListSubtasks();
         assertEquals(0, allSubtasks.size());
-    }
-
-    @Test
-    void addShouldKeepIdForTask() {
-        //Arrange
-        Task task = new Task("task1", "descr");
-        task.setId(999999);
-
-        //Act
-        inMemoryTaskManager.add(task);
-
-        //Assert
-        assertEquals(999999, task.getId());
-    }
-
-    @Test
-    void addShouldKeepIdForEpic() {
-        //Arrange
-        Epic epic = new Epic("epic", "descr");
-        epic.setId(999999);
-
-        //Act
-        inMemoryTaskManager.add(epic);
-
-        //Assert
-        assertEquals(999999, epic.getId());
-    }
-
-    @Test
-    void addShouldSetKeepIdForSubtask() {
-        //Arrange
-        Epic epic = new Epic("epic", "descr");
-        Subtask subtask = new Subtask("subtask", "descr");
-        subtask.setId(99999);
-        inMemoryTaskManager.add(epic);
-
-        //Act
-        inMemoryTaskManager.add(subtask, epic.getId());
-
-
-        //Assert
-        assertEquals(99999, subtask.getId());
     }
 
     @Test
@@ -193,7 +160,8 @@ class InMemoryTaskManagerTest {
         Subtask subtask = new Subtask("subtask1", "descr");
 
         //Act
-        inMemoryTaskManager.add(subtask, epic.getId());
+        subtask.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask);
 
         //Assert
         Subtask foundSubtask = inMemoryTaskManager.getSubtask(subtask.getId());
@@ -215,9 +183,13 @@ class InMemoryTaskManagerTest {
 
         //Assert
         List<Task> tasks = inMemoryTaskManager.getListTasks();
-        assertEquals(1, tasks.size());
-        Task task = tasks.getFirst();
+        assertEquals(2, tasks.size());
+        Task task = tasks.stream().filter(t -> t.getName().equals("abc1")).findFirst().orElseThrow();
         assertEquals(1, task.getId());
+        assertEquals("abc1", task.getName());
+        assertEquals("descr1", task.getDescription());
+        task = tasks.stream().filter(t -> t.getName().equals("abc2")).findFirst().orElseThrow();
+        assertEquals(2, task.getId());
         assertEquals("abc2", task.getName());
         assertEquals("descr2", task.getDescription());
     }
@@ -254,9 +226,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         List<Subtask> subtasks = inMemoryTaskManager.getSubtasksOfEpic(epic1.getId());
@@ -284,9 +259,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         List<Task> tasks = inMemoryTaskManager.getListTasks();
@@ -313,9 +291,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         List<Epic> epics = inMemoryTaskManager.getListEpics();
@@ -336,9 +317,12 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         List<Subtask> subtasks = inMemoryTaskManager.getListSubtasks();
@@ -382,7 +366,8 @@ class InMemoryTaskManagerTest {
         Epic epic = new Epic("epic1", "descr");
         Subtask subtask = new Subtask("subtask1", "descr");
         inMemoryTaskManager.add(epic);
-        inMemoryTaskManager.add(subtask, epic.getId());
+        subtask.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask);
 
         //Act
         inMemoryTaskManager.setStatus(subtask, Status.IN_PROGRESS);
@@ -398,7 +383,8 @@ class InMemoryTaskManagerTest {
         Epic epic = new Epic("epic1", "descr");
         Subtask subtask = new Subtask("subtask1", "descr");
         inMemoryTaskManager.add(epic);
-        inMemoryTaskManager.add(subtask, epic.getId());
+        subtask.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask);
 
         //Act
         inMemoryTaskManager.setStatus(subtask.getId(), Status.IN_PROGRESS);
@@ -430,8 +416,10 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic);
         Subtask subtask1 = new Subtask("subtask1", "descr");
         Subtask subtask2 = new Subtask("subtask2", "descr");
-        inMemoryTaskManager.add(subtask1, epic.getId());
-        inMemoryTaskManager.add(subtask2, epic.getId());
+        subtask1.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         inMemoryTaskManager.setStatus(subtask1, Status.IN_PROGRESS);
@@ -449,8 +437,10 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic);
         Subtask subtask1 = new Subtask("subtask1", "descr");
         Subtask subtask2 = new Subtask("subtask2", "descr");
-        inMemoryTaskManager.add(subtask1, epic.getId());
-        inMemoryTaskManager.add(subtask2, epic.getId());
+        subtask1.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         inMemoryTaskManager.setStatus(subtask1, Status.DONE);
@@ -468,8 +458,10 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(epic);
         Subtask subtask1 = new Subtask("subtask1", "descr");
         Subtask subtask2 = new Subtask("subtask2", "descr");
-        inMemoryTaskManager.add(subtask1, epic.getId());
-        inMemoryTaskManager.add(subtask2, epic.getId());
+        subtask1.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         inMemoryTaskManager.setStatus(subtask1, Status.NEW);
@@ -506,7 +498,8 @@ class InMemoryTaskManagerTest {
         Epic epic = new Epic("epic1", "descr");
         inMemoryTaskManager.add(epic);
         Subtask subtask = new Subtask("subtask1", "descr");
-        inMemoryTaskManager.add(subtask, epic.getId());
+        subtask.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask);
 
         //Act
         inMemoryTaskManager.removeSubTask(subtask.getId());
@@ -530,9 +523,12 @@ class InMemoryTaskManagerTest {
         Subtask subtask2 = new Subtask("subtask2", "descr2");
         Subtask subtask3 = new Subtask("subtask3", "descr3");
 
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic1.getId());
-        inMemoryTaskManager.add(subtask3, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask3);
 
         //Act
         inMemoryTaskManager.removeEpic(epic1.getId());
@@ -558,8 +554,10 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(task2);
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         inMemoryTaskManager.remove(task1);
@@ -583,8 +581,10 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(task2);
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         inMemoryTaskManager.remove(epic1);
@@ -611,8 +611,10 @@ class InMemoryTaskManagerTest {
         inMemoryTaskManager.add(task2);
         inMemoryTaskManager.add(epic1);
         inMemoryTaskManager.add(epic2);
-        inMemoryTaskManager.add(subtask1, epic1.getId());
-        inMemoryTaskManager.add(subtask2, epic2.getId());
+        subtask1.setEpicId(epic1.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         inMemoryTaskManager.remove(subtask1);
@@ -653,13 +655,16 @@ class InMemoryTaskManagerTest {
         Subtask subtask = new Subtask("subtask", "descr");
         inMemoryTaskManager.add(epic);
         int epicId = inMemoryTaskManager.getListEpics().stream().findFirst().stream().findFirst().orElseThrow().getId();
-        inMemoryTaskManager.add(subtask, epicId);
-        int subtaskId = inMemoryTaskManager.getListSubtasks().stream().findFirst().stream().findFirst().orElseThrow().getId();
+        subtask.setEpicId(epicId);
+        inMemoryTaskManager.add(subtask);
         //Act && Arrange
-        assertThrowsExactly(WrongTaskTypeException.class, () -> inMemoryTaskManager.add(subtask, subtaskId));
+        assertThrowsExactly(WrongTaskTypeException.class, () -> {
+            subtask.setEpicId(subtask.getId());
+            inMemoryTaskManager.add(subtask);
+        });
     }
 
-    //С помощью сеттеров экземпляры задач позволяют изменить любое своё поле, но это может повлиять на данные внутри менеджера.
+            //С помощью сеттеров экземпляры задач позволяют изменить любое своё поле, но это может повлиять на данные внутри менеджера.
     // Протестируйте эти кейсы и подумайте над возможными вариантами решения проблемы.
     @Test
     void addShouldHaveCopyOfTask() {
@@ -692,8 +697,10 @@ class InMemoryTaskManagerTest {
         Subtask subtask2 = new Subtask("subtask2", "descr4");
         inMemoryTaskManager.add(epic);
         inMemoryTaskManager.add(epic2);
-        inMemoryTaskManager.add(subtask1, epic.getId());
-        inMemoryTaskManager.add(subtask2, epic2.getId());
+        subtask1.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic2.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         subtask2.setEpicId(subtask1.getEpicId());
@@ -714,8 +721,10 @@ class InMemoryTaskManagerTest {
         Subtask subtask1 = new Subtask("subtask1", "descr3");
         Subtask subtask2 = new Subtask("subtask2", "descr4");
         inMemoryTaskManager.add(epic);
-        inMemoryTaskManager.add(subtask1, epic.getId());
-        inMemoryTaskManager.add(subtask2, epic.getId());
+        subtask1.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask1);
+        subtask2.setEpicId(epic.getId());
+        inMemoryTaskManager.add(subtask2);
 
         //Act
         subtask1.setStatus(Status.DONE);

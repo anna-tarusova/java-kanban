@@ -9,7 +9,7 @@ import ru.yandex.practicum.tasks.model.enums.TaskType;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int taskId = 0;
+    private int taskId = 1;
     private Map<Integer, BaseTask> tasks = new HashMap<>();
     private final HistoryManager historyManager;
 
@@ -19,13 +19,24 @@ public class InMemoryTaskManager implements TaskManager {
 
     //вспомогательный метод
     private void addBaseTask(BaseTask task) {
+        //Копирование нужно из-за ТЗ 6 спринта
+        //Там написано: "С помощью сеттеров экземпляры задач позволяют изменить любое своё поле,
+        // но это может повлиять на данные внутри менеджера.
+        // Протестируйте эти кейсы и подумайте над возможными вариантами решения проблемы."
+        // Написаны даже тесты про это.
         BaseTask copyTask = getCopyTask(task);
-        if (copyTask.getId() == 0) {
-            taskId++;
-            copyTask.setId(taskId);
-            task.setId(copyTask.getId());
-        }
-        tasks.put(copyTask.getId(), copyTask);
+        int taskId = getNextId();
+        task.setId(taskId);
+        copyTask.setId(taskId);
+        tasks.put(taskId, copyTask);
+    }
+
+    private int getNextId() {
+        return taskId++;
+    }
+
+    protected void setStartNextId(int taskId) {
+        this.taskId = taskId;
     }
 
     private void ensureTaskIsTask(BaseTask task) {
@@ -50,11 +61,26 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(tasks.values());
     }
 
+    //Вспомогательный метод. Айдишник берется из самой таски, а не из метода getNextId()
+    //Метод нужен при восстановлении тасок из какого-то источника
+    protected void put(BaseTask task) {
+        if (task.getTaskType() == TaskType.SUBTASK) {
+            Subtask st = (Subtask) task;
+            if (!tasks.containsKey(st.getEpicId())) {
+                throw new TaskNotFoundException(String.format("Не существует эпика с id = %d", st.getEpicId()));
+            }
+        }
+        if (tasks.containsKey(task.getId())) {
+            throw new IllegalStateException(String.format("Таска с id = %d уже была ранее добавлена", task.getId()));
+        }
+        tasks.put(task.getId(), task);
+    }
+
     //Методы, работающие с тасками всех типов
     @Override
     public void clearTasksOfAnyType() {
         tasks = new HashMap<>();
-        taskId = 0;
+        setStartNextId(1);
     }
 
     private BaseTask getTaskOfAnyType(int id) {
@@ -244,8 +270,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void add(Subtask subtask, int epicId) {
-        BaseTask epic = getTaskOfAnyType(epicId);
+    public void add(Subtask subtask) {
+        BaseTask epic = getTaskOfAnyType(subtask.getEpicId());
         ensureTaskIsEpic(epic);
         subtask.setEpicId(epic.getId());
         addBaseTask(subtask);

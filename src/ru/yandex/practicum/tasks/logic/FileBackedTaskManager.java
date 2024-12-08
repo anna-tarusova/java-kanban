@@ -33,15 +33,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerLoadException("Не удалось прочитать файл");
         }
 
-        List<BaseTask> baseTasks = lines.stream().map(BaseTask::fromString).toList();
+        List<BaseTask> baseTasks;
+        try {
+            baseTasks = lines.stream().map(BaseTask::fromString).toList();
+        } catch (IllegalStateException e) {
+            throw new ManagerLoadException(e.getMessage());
+        }
         //сначала восстанавливаем эпики и только потом сабтаски (так как они кладутся в эпики)
         //таски сами по себе, поэтому можно восстановить их первым или последними
-        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.TASK).forEach(bt -> fileBackedTaskManager.add((Task) bt));
-        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.EPIC).forEach(bt -> fileBackedTaskManager.add((Epic) bt));
-        baseTasks.stream().filter(bt -> bt.getTaskType() == TaskType.SUBTASK).forEach(bt -> {
-            Subtask st = (Subtask)bt;
-            fileBackedTaskManager.add(st, st.getEpicId());
-        });
+        baseTasks.stream().filter(task -> task.getTaskType() == TaskType.TASK).forEach(fileBackedTaskManager::put);
+        baseTasks.stream().filter(task -> task.getTaskType() == TaskType.EPIC).forEach(fileBackedTaskManager::put);
+        baseTasks.stream().filter(task -> task.getTaskType() == TaskType.SUBTASK).forEach(fileBackedTaskManager::put);
+
+        //устанавливаем новое значение счетчика (максимальное значение счетчика из файла + 1)
+        int nextId = 1;
+        if (!baseTasks.isEmpty()) {
+            nextId = baseTasks.stream().map(BaseTask::getId).reduce(Integer.MIN_VALUE, Integer::max) + 1;
+        }
+        fileBackedTaskManager.setStartNextId(nextId);
 
         return fileBackedTaskManager;
     }
@@ -57,19 +66,25 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void add(Epic epic) {
-        super.add(epic);
-        save();
-    }
-
-    @Override
-    public void add(Subtask subtask, int epicId) {
-        super.add(subtask, epicId);
+    protected void put(BaseTask task) {
+        super.put(task);
         save();
     }
 
     @Override
     public void add(Task task) {
+        super.add(task);
+        save();
+    }
+
+    @Override
+    public void add(Epic task) {
+        super.add(task);
+        save();
+    }
+
+    @Override
+    public void add(Subtask task) {
         super.add(task);
         save();
     }
