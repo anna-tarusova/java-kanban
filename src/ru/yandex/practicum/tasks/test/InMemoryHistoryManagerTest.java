@@ -130,8 +130,10 @@ class InMemoryHistoryManagerTest {
         TaskManager taskManager = new InMemoryTaskManager(inMemoryHistoryManager);
         taskManager.add(task);
         taskManager.add(epic);
-        taskManager.add(subtask1, epic.getId());
-        taskManager.add(subtask2, epic.getId());
+        subtask1.setEpicId(epic.getId());
+        taskManager.add(subtask1);
+        subtask2.setEpicId(epic.getId());
+        taskManager.add(subtask2);
 
         //Act
         taskManager.getSubtasksOfEpic(epic.getId());

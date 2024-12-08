@@ -6,6 +6,11 @@ public class Subtask extends BaseTask {
 
     private int epicId;
 
+    @Override
+    public String toString() {
+        return String.format("%s,%d", super.toString(), epicId);
+    }
+
     public Subtask(String name, String description) {
         super(name, description);
     }
@@ -23,3 +28,4 @@ public class Subtask extends BaseTask {
         return TaskType.SUBTASK;
     }
 }
+
