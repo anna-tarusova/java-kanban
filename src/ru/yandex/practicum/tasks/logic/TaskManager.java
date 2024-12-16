@@ -40,7 +40,7 @@ public interface TaskManager {
 
     void add(Epic epic);
 
-    void add(Subtask subtask, int epicId);
+    void add(Subtask subtask);
 
     void removeTask(int id);
 

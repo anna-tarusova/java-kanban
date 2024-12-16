@@ -57,8 +57,11 @@ class ManagersTest {
         //Arrange
         HistoryManager historyManager = managers.getDefaultHistory();
         Task task = new Task("task1", "descr task");
+        task.setId(1);
         Epic epic = new Epic("epic1", "descr epic");
+        epic.setId(2);
         Subtask subtask = new Subtask("subtask1", "descr subtask");
+        subtask.setId(3);
 
         //Act
         historyManager.add(task);
