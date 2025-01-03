@@ -13,8 +13,6 @@ public interface TaskManager {
     //Методы, работающие с тасками всех типов
     void clearTasksOfAnyType();
 
-    void updateTaskOfAnyType(BaseTask task);
-
     //Методы, работающие с тасками определенного типа
     void clearTasks();
 
@@ -61,4 +59,6 @@ public interface TaskManager {
     void setStatus(Subtask subtask, Status status);
 
     List<BaseTask> getHistory();
+
+    List<BaseTask> getPrioritizedTasks();
 }

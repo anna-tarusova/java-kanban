@@ -24,7 +24,7 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void addShouldAddTaskToHistory() {
+    void add_shouldAddTaskToHistory() {
         //Arrange
         Task task = new Task("task1", "descr1");
         task.setId(1);
@@ -52,7 +52,7 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void getHistoryShouldReturnHistory() {
+    void getHistory_shouldReturnHistory() {
         //Arrange
         Task task = new Task("task1", "descr1");
         task.setId(1);
@@ -82,8 +82,9 @@ class InMemoryHistoryManagerTest {
     }
 
 
+    //Проверка на дублирование
     @Test
-    void getHistoryShouldReturnLastVersionOfTask() {
+    void getHistory_shouldReturnLastVersionOfTask() {
         //Arrange
         Task task = new Task("task1", "descr1");
         TaskManager taskManager = new InMemoryTaskManager(inMemoryHistoryManager);
@@ -103,7 +104,7 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void getHistoryShouldReturnTaskWhichWasReturnedByGetTask() {
+    void getHistory_shouldReturnTaskWhichWasReturnedByGetTask() {
         //Arrange
         Task task = new Task("task1", "descr1");
         TaskManager taskManager = new InMemoryTaskManager(inMemoryHistoryManager);
@@ -120,7 +121,7 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void getHistoryShouldReturnSubtasksIfGetSubtasksOfEpicCalled() {
+    void getHistory_shouldReturnSubtasksIfGetSubtasksOfEpicCalled() {
         //Arrange
         Task task = new Task("task1", "descr1");
         Epic epic = new Epic("epic1", "descr epic");
@@ -148,7 +149,7 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void getHistoryShouldReturnOnlyLastTask() {
+    void getHistory_shouldReturnOnlyLastTask() {
         //Arrange
         Task task = new Task("task1", "descr1");
         Task task2 = new Task("task2", "descr2");
@@ -172,7 +173,16 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void removeShouldDeleteTaskFromHistory() {
+    void getHistory_fromStartShouldReturnEmptyHistory() {
+        //Act
+        List<BaseTask> history = inMemoryHistoryManager.getHistory();
+
+        //Arrange
+        assertEquals(0, history.size());
+    }
+
+    @Test
+    void remove_shouldDeleteTaskFromHistory() {
         //Arrange
         Task task = new Task("task1", "descr1");
         task.setId(1);
@@ -189,5 +199,83 @@ class InMemoryHistoryManagerTest {
         assertEquals(1, history.size());
         BaseTask firstTaskInHistory = history.getFirst();
         assertEquals(task, firstTaskInHistory);
+    }
+
+    //удаляем из начала списка
+    @Test
+    void remove_shouldBeAbleToDeleteTheFirstTaskFromHistory() {
+        //Arrange
+        Task task = new Task("task1", "descr1");
+        task.setId(1);
+        Epic epic1 = new Epic("epic1", "descr2");
+        epic1.setId(2);
+        Epic epic2 = new Epic("epic2", "descr2");
+        epic2.setId(3);
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(epic1);
+        inMemoryHistoryManager.add(epic2);
+
+        //Act
+        inMemoryHistoryManager.remove(task.getId());
+
+        //Assert
+        List<BaseTask> history = inMemoryHistoryManager.getHistory();
+        assertEquals(2, history.size());
+        BaseTask firstTaskInHistory = history.getFirst();
+        assertEquals(epic1, firstTaskInHistory);
+        BaseTask lastTaskInHistory = history.getLast();
+        assertEquals(epic2, lastTaskInHistory);
+    }
+
+    //удаляем из конца списка
+    @Test
+    void remove_shouldBeAbleToDeleteTheLastTaskFromHistory() {
+        //Arrange
+        Task task = new Task("task1", "descr1");
+        task.setId(1);
+        Epic epic1 = new Epic("epic1", "descr2");
+        epic1.setId(2);
+        Epic epic2 = new Epic("epic2", "descr2");
+        epic2.setId(3);
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(epic1);
+        inMemoryHistoryManager.add(epic2);
+
+        //Act
+        inMemoryHistoryManager.remove(epic2.getId());
+
+        //Assert
+        List<BaseTask> history = inMemoryHistoryManager.getHistory();
+        assertEquals(2, history.size());
+        BaseTask firstTaskInHistory = history.getFirst();
+        assertEquals(task, firstTaskInHistory);
+        BaseTask lastTaskInHistory = history.getLast();
+        assertEquals(epic1, lastTaskInHistory);
+    }
+
+    //удаляем из середины списка
+    @Test
+    void remove_shouldBeAbleToDeleteTaskFromTheMiddleOfHistory() {
+        //Arrange
+        Task task = new Task("task1", "descr1");
+        task.setId(1);
+        Epic epic1 = new Epic("epic1", "descr2");
+        epic1.setId(2);
+        Epic epic2 = new Epic("epic2", "descr2");
+        epic2.setId(3);
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(epic1);
+        inMemoryHistoryManager.add(epic2);
+
+        //Act
+        inMemoryHistoryManager.remove(epic1.getId());
+
+        //Assert
+        List<BaseTask> history = inMemoryHistoryManager.getHistory();
+        assertEquals(2, history.size());
+        BaseTask firstTaskInHistory = history.getFirst();
+        assertEquals(task, firstTaskInHistory);
+        BaseTask lastTaskInHistory = history.getLast();
+        assertEquals(epic2, lastTaskInHistory);
     }
 }

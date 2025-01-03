@@ -39,9 +39,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IllegalStateException e) {
             throw new ManagerLoadException(e.getMessage());
         }
+
         //сначала восстанавливаем эпики и только потом сабтаски (так как они кладутся в эпики)
         //таски сами по себе, поэтому можно восстановить их первым или последними
-
         try {
             baseTasks.stream().filter(task -> task.getTaskType() == TaskType.TASK).forEach(fileBackedTaskManager::put);
             baseTasks.stream().filter(task -> task.getTaskType() == TaskType.EPIC).forEach(fileBackedTaskManager::put);

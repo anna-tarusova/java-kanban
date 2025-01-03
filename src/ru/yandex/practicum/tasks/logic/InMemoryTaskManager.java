@@ -1,5 +1,6 @@
 package ru.yandex.practicum.tasks.logic;
 
+import ru.yandex.practicum.tasks.exceptions.TaskAddException;
 import ru.yandex.practicum.tasks.exceptions.TaskNotFoundException;
 import ru.yandex.practicum.tasks.exceptions.WrongTaskTypeException;
 import ru.yandex.practicum.tasks.model.*;
@@ -12,23 +13,34 @@ public class InMemoryTaskManager implements TaskManager {
     private int taskId = 1;
     private Map<Integer, BaseTask> tasks = new HashMap<>();
     private final HistoryManager historyManager;
+    private final Comparator<BaseTask> taskComparator = Comparator.comparing(BaseTask::getStartTime);
+    private final TreeSet<BaseTask> sortedTasksByStartTime = new TreeSet<>(taskComparator);
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
     }
 
     //вспомогательный метод
-    private void addBaseTask(BaseTask task) {
+    private BaseTask addBaseTask(BaseTask task) {
         //Копирование нужно из-за ТЗ 6 спринта
         //Там написано: "С помощью сеттеров экземпляры задач позволяют изменить любое своё поле,
         // но это может повлиять на данные внутри менеджера.
         // Протестируйте эти кейсы и подумайте над возможными вариантами решения проблемы."
         // Написаны даже тесты про это.
         BaseTask copyTask = getCopyTask(task);
+        long overlappedCount = sortedTasksByStartTime.stream()
+                .filter(s -> BaseTask.areTimeSpansOverLapped(s.getStartTime(), s.getEndTime(), copyTask.getStartTime(), copyTask.getEndTime())).count();
+        if (overlappedCount > 0) {
+            throw new TaskAddException("Есть пересечение с уже существующими тасками");
+        }
         int taskId = getNextId();
         task.setId(taskId);
         copyTask.setId(taskId);
         tasks.put(taskId, copyTask);
+        if (copyTask.getStartTime() != null) {
+            sortedTasksByStartTime.add(copyTask);
+        }
+        return copyTask;
     }
 
     private int getNextId() {
@@ -69,11 +81,20 @@ public class InMemoryTaskManager implements TaskManager {
             if (!tasks.containsKey(subtask.getEpicId())) {
                 throw new TaskNotFoundException(String.format("Не существует эпика с id = %d", subtask.getEpicId()));
             }
+            BaseTask potentialEpic = tasks.get(subtask.getEpicId());
+            if (potentialEpic.getTaskType() != TaskType.EPIC) {
+                throw new IllegalStateException("Сабтаска может добавляться только в эпик");
+            }
+            Epic epic = (Epic)potentialEpic;
+            epic.addSubtask(subtask);
         }
         if (tasks.containsKey(task.getId())) {
             throw new IllegalStateException(String.format("Таска с id = %d уже была ранее добавлена", task.getId()));
         }
         tasks.put(task.getId(), task);
+        if (task.getStartTime() != null) {
+            sortedTasksByStartTime.add(task);
+        }
     }
 
     //Методы, работающие с тасками всех типов
@@ -88,40 +109,6 @@ public class InMemoryTaskManager implements TaskManager {
             throw new TaskNotFoundException("Не найден таск с id = " + id);
         }
         return tasks.get(id);
-    }
-
-    private void updateStatusOfEpic(Epic epic) {
-        updateStatusOfEpic(epic.getId());
-    }
-
-    private void updateStatusOfEpic(int epicId) {
-        BaseTask epic = getTaskOfAnyType(epicId);
-        ensureTaskIsEpic(epic);
-        List<Subtask> subtasksOfEpic = tasks
-                .values()
-                .stream()
-                .filter(t -> t.getTaskType() == TaskType.SUBTASK && ((Subtask)t).getEpicId() == epicId)
-                .map(t -> (Subtask)t)
-                .toList();
-
-        if (subtasksOfEpic.stream().allMatch(t -> t.getStatus() == Status.NEW)) {
-            epic.setStatus(Status.NEW);
-        } else if (subtasksOfEpic.stream().allMatch(t -> t.getStatus() == Status.DONE)) {
-            epic.setStatus(Status.DONE);
-        } else {
-            epic.setStatus(Status.IN_PROGRESS);
-        }
-    }
-
-    @Override
-    public void updateTaskOfAnyType(BaseTask task) {
-        tasks.put(task.getId(), task);
-
-        //если таска является сабтаской, то найти её эпик и вызывать для него updateStatus
-        if (task.getTaskType() == TaskType.SUBTASK) {
-            Subtask subtask = (Subtask) task;
-            updateStatusOfEpic(subtask.getEpicId());
-        }
     }
 
     //Методы, работающие с тасками определенного типа
@@ -151,7 +138,7 @@ public class InMemoryTaskManager implements TaskManager {
         tasks.keySet().forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
             if (task.getTaskType() == TaskType.EPIC) {
-                updateStatusOfEpic((Epic) task);
+                ((Epic)task).calculateAll();
             }
         });
     }
@@ -274,8 +261,8 @@ public class InMemoryTaskManager implements TaskManager {
         BaseTask epic = getTaskOfAnyType(subtask.getEpicId());
         ensureTaskIsEpic(epic);
         subtask.setEpicId(epic.getId());
-        addBaseTask(subtask);
-        updateStatusOfEpic((Epic)epic);
+        BaseTask copyTask = addBaseTask(subtask);
+        ((Epic)epic).addSubtask((Subtask) copyTask);
     }
 
     @Override
@@ -283,13 +270,16 @@ public class InMemoryTaskManager implements TaskManager {
         BaseTask task = getTaskOfAnyType(id);
         ensureTaskIsTask(task);
         tasks.remove(id);
+        sortedTasksByStartTime.remove(task);
     }
 
     @Override
     public void removeSubTask(int id) {
         Subtask subtask = getSubtask(id);
         tasks.remove(id);
-        updateStatusOfEpic(subtask.getEpicId());
+        Epic epic = getEpic(subtask.getEpicId());
+        epic.removeSubtask(id);
+        sortedTasksByStartTime.remove(subtask);
     }
 
     @Override
@@ -300,6 +290,7 @@ public class InMemoryTaskManager implements TaskManager {
         List<Subtask> subtasks = getSubtasksOfEpic(id);
         subtasks.forEach((Subtask subtask) -> tasks.remove(subtask.getId()));
         tasks.remove(id);
+        sortedTasksByStartTime.remove(task);
     }
 
     @Override
@@ -325,22 +316,8 @@ public class InMemoryTaskManager implements TaskManager {
         }
         task.setStatus(status);
         if (task.getTaskType() == TaskType.SUBTASK) {
-            int epicId = ((Subtask)task).getEpicId();
-            Epic epic = (Epic)tasks.get(epicId);
-            List<Subtask> subtasksOfEpic = tasks
-                    .values()
-                    .stream()
-                    .filter(t -> t.getTaskType() == TaskType.SUBTASK && ((Subtask) t).getEpicId() == epicId)
-                    .map(t -> (Subtask)t)
-                    .toList();
-
-            if (subtasksOfEpic.stream().allMatch(st -> st.getStatus() == Status.NEW)) {
-                epic.setStatus(Status.NEW);
-            } else if (subtasksOfEpic.stream().allMatch(st -> st.getStatus() == Status.DONE)) {
-                epic.setStatus(Status.DONE);
-            } else {
-                epic.setStatus(Status.IN_PROGRESS);
-            }
+            Epic epic = getEpic(((Subtask)task).getEpicId());
+            epic.calculateStatus();
         }
     }
 
@@ -359,6 +336,11 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    @Override
+    public List<BaseTask> getPrioritizedTasks() {
+        return sortedTasksByStartTime.stream().toList();
+    }
+
     public static BaseTask getCopyTask(BaseTask task) {
         BaseTask copyTask = null;
         if (task.getTaskType() == TaskType.TASK) {
@@ -375,7 +357,11 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         copyTask.setId(task.getId());
-        copyTask.setStatus(task.getStatus());
+        if (copyTask.getTaskType() != TaskType.EPIC) {
+            copyTask.setStatus(task.getStatus());
+            copyTask.setStartTime(task.getStartTime());
+            copyTask.setDuration(task.getDuration());
+        }
         return copyTask;
     }
 }
