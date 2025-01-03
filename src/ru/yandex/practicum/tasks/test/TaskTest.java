@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
     @Test
-    void getTaskTypeShouldReturnTask() {
+    void getTaskType_shouldReturnTask() {
         //Arrange
         Task task = new Task("subtask", "descr");
         //Act
@@ -18,7 +18,7 @@ class TaskTest {
     }
 
     @Test
-    void tasksShouldBeEqualIfTheyHaveTheSameId() {
+    void equals_tasksShouldBeEqualIfTheyHaveTheSameId() {
         //Фраза из ТЗ:
         //"проверьте, что наследники класса Task равны друг другу, если равен их id;"
         //Arrange
