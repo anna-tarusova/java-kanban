@@ -64,7 +64,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         Epic epic = epics.getFirst();
         assertEquals(7, epic.getId());
         assertEquals("epic1", epic.getName());
-        assertEquals(Status.NEW, epic.getStatus());
+        assertEquals(Status.NEW, epic.getStatus());//<-статус Эпика вычисляемый
         assertEquals("descr", epic.getDescription());
         assertEquals(0, subtasks.size());
     }

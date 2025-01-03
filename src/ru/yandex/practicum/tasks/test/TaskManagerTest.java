@@ -762,6 +762,37 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
+    void getPrioritizedTasks_shouldNotReturnDeletedTasks() {
+        //Arrange
+        Task task = new Task("task1", "descr");
+        task.setStartTime(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(task);
+
+        Epic epic = new Epic("epic1", "descr2");
+        taskManager.add(epic);
+        Subtask subtask = new Subtask("subtask1", "descr3");
+        subtask.setStartTime(LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter));
+        subtask.setEpicId(epic.getId());
+        taskManager.add(subtask);
+
+        Epic epic2 = new Epic("epic2", "descr2");
+        taskManager.add(epic2);
+        Subtask subtask2 = new Subtask("subtask2", "descr3");
+        subtask2.setStartTime(LocalDateTime.parse("01.01.2025 13:00", dateTimeFormatter));
+        subtask2.setEpicId(epic2.getId());
+        taskManager.add(subtask2);
+        taskManager.remove(subtask2);
+
+        //Act
+        List<BaseTask> tasks = taskManager.getPrioritizedTasks();
+
+        //Assert
+        assertEquals(2, tasks.size());
+        assertEquals(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter), tasks.getFirst().getStartTime());
+        assertEquals(LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter), tasks.get(1).getStartTime());
+    }
+
+    @Test
     void getPrioritizedTasks_shouldIgnoreTasksWithNullStartTime() {
         //Arrange
         Task task = new Task("task1", "descr");

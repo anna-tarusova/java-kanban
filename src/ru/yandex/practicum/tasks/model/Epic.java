@@ -27,7 +27,7 @@ public class Epic extends BaseTask {
             duration = subtasks.stream()
                     .map(BaseTask::getDuration)
                     .filter(Objects::nonNull)
-                    .reduce(Duration.ZERO, (accDuration, currentDuration) -> currentDuration.plus(accDuration), (accDuration, _) -> accDuration);
+                    .reduce(Duration.ZERO, (accDuration, currentDuration) -> currentDuration.plus(accDuration), (accDuration, currentDuration) -> accDuration);
         }
     }
 
