@@ -100,7 +100,8 @@ public class InMemoryTaskManager implements TaskManager {
     //Методы, работающие с тасками всех типов
     @Override
     public void clearTasksOfAnyType() {
-        tasks = new HashMap<>();
+        tasks.clear();
+        sortedTasksByStartTime.clear();
         setStartNextId(1);
     }
 
