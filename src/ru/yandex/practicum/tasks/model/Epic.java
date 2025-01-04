@@ -22,8 +22,7 @@ public class Epic extends BaseTask {
     private void calculateDuration() {
         if (subtasks.stream().allMatch(s -> s.getDuration() == null)) {
             duration = null;
-        }
-        else {
+        } else {
             duration = subtasks.stream()
                     .map(BaseTask::getDuration)
                     .filter(Objects::nonNull)
@@ -66,6 +65,7 @@ public class Epic extends BaseTask {
         if (subtasks.stream().anyMatch(s -> s.getId() == subtask.getId())) {
             throw new IllegalStateException("Нельзя добавить сабтаску дважды");
         }
+
         if (subtask.getEpicId() != id) {
             throw new IllegalStateException("Нельзя добавить сабтаску от другого эпика");
         }
