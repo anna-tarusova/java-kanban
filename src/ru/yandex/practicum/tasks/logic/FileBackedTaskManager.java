@@ -46,8 +46,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             baseTasks.stream().filter(task -> task.getTaskType() == TaskType.TASK).forEach(fileBackedTaskManager::put);
             baseTasks.stream().filter(task -> task.getTaskType() == TaskType.EPIC).forEach(fileBackedTaskManager::put);
             baseTasks.stream().filter(task -> task.getTaskType() == TaskType.SUBTASK).forEach(fileBackedTaskManager::put);
-        }
-        catch (IllegalStateException e) {
+        } catch (IllegalStateException e) {
             throw new ManagerLoadException(e.getMessage());
         }
 
