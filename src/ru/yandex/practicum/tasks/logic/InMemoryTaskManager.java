@@ -115,13 +115,10 @@ public class InMemoryTaskManager implements TaskManager {
     //Методы, работающие с тасками определенного типа
     @Override
     public void clearTasks() {
-        List<Integer> toRemove = new ArrayList<>();
-        tasks.keySet().forEach((Integer id) -> {
-            BaseTask task = tasks.get(id);
-            if (task.getTaskType() == TaskType.TASK) {
-                toRemove.add(id);
-            }
-        });
+        List<Integer> toRemove = tasks.values().stream()
+                .filter(t -> t.getTaskType().equals(TaskType.TASK))
+                        .map(BaseTask::getId).toList();
+
         toRemove.forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
             tasks.remove(id);
@@ -131,13 +128,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void clearSubTasks() {
-        List<Integer> toRemove = new ArrayList<>();
-        tasks.keySet().forEach((Integer id) -> {
-            BaseTask task = tasks.get(id);
-            if (task.getTaskType() == TaskType.SUBTASK) {
-                toRemove.add(id);
-            }
-        });
+        List<Integer> toRemove = tasks.values().stream()
+                .filter(t -> t.getTaskType().equals(TaskType.SUBTASK))
+                .map(BaseTask::getId)
+                .toList();
+
         toRemove.forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
             tasks.remove(id);
@@ -152,13 +147,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void clearEpics() {
-        List<Integer> toRemove = new ArrayList<>();
-        tasks.keySet().forEach((Integer id) -> {
-            BaseTask task = tasks.get(id);
-            if (task.getTaskType() == TaskType.EPIC) {
-                toRemove.add(id);
-            }
-        });
+        List<Integer> toRemove = new ArrayList<>(tasks.values()
+                .stream()
+                .filter(t -> t.getTaskType().equals(TaskType.EPIC))
+                .map(BaseTask::getId)
+                .toList());
 
         for (int i = 0; i < toRemove.size(); i++) {
             int id = toRemove.get(i);
