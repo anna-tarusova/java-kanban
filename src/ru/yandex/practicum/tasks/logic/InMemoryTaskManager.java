@@ -11,7 +11,7 @@ import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     private int taskId = 1;
-    private Map<Integer, BaseTask> tasks = new HashMap<>();
+    private final Map<Integer, BaseTask> tasks = new HashMap<>();
     private final HistoryManager historyManager;
     private final Comparator<BaseTask> taskComparator = Comparator.comparing(BaseTask::getStartTime);
     private final TreeSet<BaseTask> sortedTasksByStartTime = new TreeSet<>(taskComparator);
@@ -122,7 +122,11 @@ public class InMemoryTaskManager implements TaskManager {
                 toRemove.add(id);
             }
         });
-        toRemove.forEach((Integer id) -> tasks.remove(id));
+        toRemove.forEach((Integer id) -> {
+            BaseTask task = tasks.get(id);
+            tasks.remove(id);
+            sortedTasksByStartTime.remove(task);
+        });
     }
 
     @Override
@@ -134,14 +138,16 @@ public class InMemoryTaskManager implements TaskManager {
                 toRemove.add(id);
             }
         });
-        toRemove.forEach((Integer id) -> tasks.remove(id));
-
-        tasks.keySet().forEach((Integer id) -> {
+        toRemove.forEach((Integer id) -> {
             BaseTask task = tasks.get(id);
-            if (task.getTaskType() == TaskType.EPIC) {
-                ((Epic)task).calculateAll();
-            }
+            tasks.remove(id);
+            sortedTasksByStartTime.remove(task);
         });
+
+        tasks.values()
+                .stream()
+                .filter(t -> t.getTaskType().equals(TaskType.EPIC))
+                .forEach(t -> ((Epic)t).calculateAll());
     }
 
     @Override
@@ -162,7 +168,11 @@ public class InMemoryTaskManager implements TaskManager {
                 .forEach(t -> toRemove.add(t.getId()));
         }
 
-        toRemove.forEach(id -> tasks.remove(id));
+        toRemove.forEach(id -> {
+            BaseTask task = tasks.get(id);
+            sortedTasksByStartTime.remove(task);
+            tasks.remove(id);
+        });
     }
 
     @Override
@@ -259,11 +269,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void add(Subtask subtask) {
-        BaseTask epic = getTaskOfAnyType(subtask.getEpicId());
-        ensureTaskIsEpic(epic);
-        subtask.setEpicId(epic.getId());
+        BaseTask potentialEpic = getTaskOfAnyType(subtask.getEpicId());
+        ensureTaskIsEpic(potentialEpic);
         BaseTask copyTask = addBaseTask(subtask);
-        ((Epic)epic).addSubtask((Subtask) copyTask);
+        Epic epic = (Epic)potentialEpic;
+        epic.addSubtask((Subtask) copyTask);
     }
 
     @Override

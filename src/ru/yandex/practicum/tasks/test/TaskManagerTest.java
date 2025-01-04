@@ -58,6 +58,152 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
+    void clearTasksOfAnyType_shouldAffectOnGetPrioritizedTasks() {
+        //Arrange
+        Task task1 = new Task("task1","descr1");
+        task1.setStartTime(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter));
+        Task task2 = new Task("task2", "descr2");
+        task2.setStartTime(LocalDateTime.parse("02.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(task1);
+        taskManager.add(task2);
+        Epic epic1 = new Epic("epic1", "descr");
+        Epic epic2 = new Epic("epic2", "descr");
+        Subtask subtask1 = new Subtask("subtask1", "descr");
+        subtask1.setStartTime(LocalDateTime.parse("03.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask2 = new Subtask("subtask2", "descr");
+        subtask2.setStartTime(LocalDateTime.parse("04.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask3 = new Subtask("subtask3", "descr");
+        subtask3.setStartTime(LocalDateTime.parse("05.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(epic1);
+        taskManager.add(epic2);
+
+        subtask1.setEpicId(epic1.getId());
+        taskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        taskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        taskManager.add(subtask3);
+
+        //Act
+        taskManager.clearTasksOfAnyType();
+
+        //Assert
+        List<BaseTask> tasks = taskManager.getPrioritizedTasks();
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    void clearTasks_shouldAffectOnGetPrioritizedTasks() {
+        //Arrange
+        Task task1 = new Task("task1","descr1");
+        task1.setStartTime(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter));
+        Task task2 = new Task("task2", "descr2");
+        task2.setStartTime(LocalDateTime.parse("02.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(task1);
+        taskManager.add(task2);
+        Epic epic1 = new Epic("epic1", "descr");
+        Epic epic2 = new Epic("epic2", "descr");
+        Subtask subtask1 = new Subtask("subtask1", "descr");
+        subtask1.setStartTime(LocalDateTime.parse("03.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask2 = new Subtask("subtask2", "descr");
+        subtask2.setStartTime(LocalDateTime.parse("04.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask3 = new Subtask("subtask3", "descr");
+        subtask3.setStartTime(LocalDateTime.parse("05.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(epic1);
+        taskManager.add(epic2);
+
+        subtask1.setEpicId(epic1.getId());
+        taskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        taskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        taskManager.add(subtask3);
+
+        //Act
+        taskManager.clearTasks();
+
+        //Assert
+        List<BaseTask> tasks = taskManager.getPrioritizedTasks();
+        assertEquals(3, tasks.size());
+        //проверяем, что нет ни одной таски
+        assertFalse(tasks.stream().allMatch(t -> t.getTaskType().equals(TaskType.TASK)));
+    }
+
+    @Test
+    void clearSubTasks_shouldAffectOnGetPrioritizedTasks() {
+        //Arrange
+        Task task1 = new Task("task1","descr1");
+        task1.setStartTime(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter));
+        Task task2 = new Task("task2", "descr2");
+        task2.setStartTime(LocalDateTime.parse("02.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(task1);
+        taskManager.add(task2);
+        Epic epic1 = new Epic("epic1", "descr");
+        Epic epic2 = new Epic("epic2", "descr");
+        Subtask subtask1 = new Subtask("subtask1", "descr");
+        subtask1.setStartTime(LocalDateTime.parse("03.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask2 = new Subtask("subtask2", "descr");
+        subtask2.setStartTime(LocalDateTime.parse("04.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask3 = new Subtask("subtask3", "descr");
+        subtask3.setStartTime(LocalDateTime.parse("05.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(epic1);
+        taskManager.add(epic2);
+
+        subtask1.setEpicId(epic1.getId());
+        taskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        taskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        taskManager.add(subtask3);
+
+        //Act
+        taskManager.clearSubTasks();
+
+        //Assert
+        List<BaseTask> tasks = taskManager.getPrioritizedTasks();
+        assertEquals(2, tasks.size());
+        //проверяем, что нет ни одной сабтаски
+        assertFalse(tasks.stream().allMatch(t -> t.getTaskType().equals(TaskType.SUBTASK)));
+    }
+
+    @Test
+    void clearEpics_shouldAffectOnGetPrioritizedTasks() {
+        //Arrange
+        Task task1 = new Task("task1","descr1");
+        task1.setStartTime(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter));
+        Task task2 = new Task("task2", "descr2");
+        task2.setStartTime(LocalDateTime.parse("02.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(task1);
+        taskManager.add(task2);
+        Epic epic1 = new Epic("epic1", "descr");
+        Epic epic2 = new Epic("epic2", "descr");
+        Subtask subtask1 = new Subtask("subtask1", "descr");
+        subtask1.setStartTime(LocalDateTime.parse("03.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask2 = new Subtask("subtask2", "descr");
+        subtask2.setStartTime(LocalDateTime.parse("04.01.2025 00:00", dateTimeFormatter));
+        Subtask subtask3 = new Subtask("subtask3", "descr");
+        subtask3.setStartTime(LocalDateTime.parse("05.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(epic1);
+        taskManager.add(epic2);
+
+        subtask1.setEpicId(epic1.getId());
+        taskManager.add(subtask1);
+        subtask2.setEpicId(epic1.getId());
+        taskManager.add(subtask2);
+        subtask3.setEpicId(epic2.getId());
+        taskManager.add(subtask3);
+
+        //Act
+        taskManager.clearEpics();
+
+        //Assert
+        List<BaseTask> tasks = taskManager.getPrioritizedTasks();
+        assertEquals(2, tasks.size());
+        //проверяем, что нет ни одной сабтаски
+        assertFalse(tasks.stream().allMatch(t -> t.getTaskType().equals(TaskType.SUBTASK)));
+    }
+
+    @Test
     void clearSubtasks_shouldClearOnlySubtasks() {
         //Arrange
         Task task1 = new Task("task1","descr1");
