@@ -79,8 +79,7 @@ public abstract class BaseTask {
             if (!groups[5].equals("null")) {
                 startTime = LocalDateTime.parse(groups[5], dateTimeFormatter);
             }
-        }
-        catch (DateTimeParseException e) {
+        } catch (DateTimeParseException e) {
             throw new IllegalStateException(String.format("Неправильный формат данных: пятое поле должно быть датой в формате %s или \"null\"", DATE_FORMAT));
         }
 
