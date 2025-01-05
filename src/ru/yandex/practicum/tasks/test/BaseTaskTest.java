@@ -77,7 +77,7 @@ class BaseTaskTest {
         String str = "7,SUBTASK,task1,IN_PROGRESS,descr7,null,null";
 
         //Act && Assert
-        assertThrowsExactly(IllegalStateException.class, () ->BaseTask.fromString(str));
+        assertThrowsExactly(IllegalStateException.class, () -> BaseTask.fromString(str));
     }
 
     @Test
