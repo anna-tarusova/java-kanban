@@ -222,6 +222,84 @@ class BaseTaskTest {
     }
 
     @Test
+    void areTimeSpansOverLapped_ifTheSecondTimeSpanStartsInsideTheFirstOneShouldReturnTrue() {
+        //Arrange
+        LocalDateTime startTime1 = LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter);
+        LocalDateTime endTime1 = LocalDateTime.parse("01.01.2025 15:00", dateTimeFormatter);
+        LocalDateTime startTime2 = LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter);
+        LocalDateTime endTime2 = null;
+        //Act
+        boolean isOverlapped = BaseTask.areTimeSpansOverLapped(startTime1, endTime1, startTime2, endTime2);
+
+        //Assert
+        assertTrue(isOverlapped);
+    }
+
+    @Test
+    void areTimeSpansOverLapped_ifTheSecondTimeSpanEndsInsideTheFirstOneShouldReturnTrue() {
+        //Arrange
+        LocalDateTime startTime1 = LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter);
+        LocalDateTime endTime1 = LocalDateTime.parse("01.01.2025 15:00", dateTimeFormatter);
+        LocalDateTime startTime2 = null;
+        LocalDateTime endTime2 = LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter);
+        //Act
+        boolean isOverlapped = BaseTask.areTimeSpansOverLapped(startTime1, endTime1, startTime2, endTime2);
+
+        //Assert
+        assertTrue(isOverlapped);
+    }
+
+    @Test
+    void areTimeSpansOverLapped_ifTheFirstTimeSpanStartsInsideTheFirstOneShouldReturnTrue() {
+        //Arrange
+        LocalDateTime startTime1 = LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter);
+        LocalDateTime endTime1 = null;
+        LocalDateTime startTime2 = LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter);
+        LocalDateTime endTime2 = LocalDateTime.parse("01.01.2025 23:00", dateTimeFormatter);
+        //Act
+        boolean isOverlapped = BaseTask.areTimeSpansOverLapped(startTime1, endTime1, startTime2, endTime2);
+
+        //Assert
+        assertTrue(isOverlapped);
+    }
+
+    @Test
+    void areTimeSpansOverLapped_ifTheFirstTimeSpanEndsInsideTheFirstOneShouldReturnTrue() {
+        //Arrange
+        LocalDateTime startTime1 = null;
+        LocalDateTime endTime1 = LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter);
+        LocalDateTime startTime2 = LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter);
+        LocalDateTime endTime2 = LocalDateTime.parse("01.01.2025 23:00", dateTimeFormatter);
+        //Act
+        boolean isOverlapped = BaseTask.areTimeSpansOverLapped(startTime1, endTime1, startTime2, endTime2);
+
+        //Assert
+        assertTrue(isOverlapped);
+    }
+
+    @Test
+    void areTimeSpansOverLapped_ifStartTime1IsAfterEndTime1ShouldThrowException() {
+        //Arrange
+        LocalDateTime startTime1 = LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter);
+        LocalDateTime endTime1 = LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter);
+        LocalDateTime startTime2 = null;
+        LocalDateTime endTime2 = null;
+        //Act & Assert
+        assertThrowsExactly(IllegalArgumentException.class, () -> BaseTask.areTimeSpansOverLapped(startTime1, endTime1, startTime2, endTime2));
+    }
+
+    @Test
+    void areTimeSpansOverLapped_ifStartTime2IsAfterEndTime2ShouldThrowException() {
+        //Arrange
+        LocalDateTime startTime1 = null;
+        LocalDateTime endTime1 = null;
+        LocalDateTime startTime2 = LocalDateTime.parse("01.01.2025 10:00", dateTimeFormatter);
+        LocalDateTime endTime2 = LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter);
+        //Act & Assert
+        assertThrowsExactly(IllegalArgumentException.class, () -> BaseTask.areTimeSpansOverLapped(startTime1, endTime1, startTime2, endTime2));
+    }
+
+    @Test
     void toString_shouldSerializeStartTimeAsNullIfStartTimeIsNull() {
         //Arrange
         Task task = new Task("task1", "descr1");

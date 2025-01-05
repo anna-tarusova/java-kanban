@@ -200,10 +200,39 @@ public abstract class BaseTask {
 
     public static boolean areTimeSpansOverLapped(LocalDateTime timeSpan1StartTime, LocalDateTime timeSpan1EndTime,
                                           LocalDateTime timeSpan2StartTime, LocalDateTime timeSpan2EndTime) {
-        if (timeSpan1StartTime == null || timeSpan1EndTime == null || timeSpan2StartTime == null || timeSpan2EndTime == null) {
-            return false;
+        if (timeSpan1StartTime != null && timeSpan1EndTime != null && timeSpan1StartTime.isAfter(timeSpan1EndTime)) {
+            throw new IllegalArgumentException("timeSpan1EndTime должна быть позже timeSpan1StartTime");
         }
-        return (timeSpan1StartTime.isBefore(timeSpan2StartTime) && timeSpan1EndTime.isAfter(timeSpan2StartTime))
-                || (timeSpan2StartTime.isBefore(timeSpan1StartTime) && timeSpan2EndTime.isAfter(timeSpan1StartTime));
+
+        if (timeSpan2StartTime != null && timeSpan2EndTime != null && timeSpan2StartTime.isAfter(timeSpan2EndTime)) {
+            throw new IllegalArgumentException("timeSpan2EndTime должна быть позже timeSpan2StartTime");
+        }
+
+        //убеждаемся, что первый отрезок не находится в другом, поэтому дополнительная проверка на timeSpan2EndTime == null
+        if (timeSpan1StartTime != null && timeSpan1EndTime != null && timeSpan2StartTime != null && timeSpan2EndTime == null) {
+            return (timeSpan2StartTime.isAfter(timeSpan1StartTime) && timeSpan2StartTime.isBefore(timeSpan1EndTime));
+        }
+
+        //убеждаемся, что первый отрезок не находится в другом, поэтому дополнительная проверка на timeSpan2StartTime == null
+        if (timeSpan1StartTime != null && timeSpan1EndTime != null && timeSpan2EndTime != null && timeSpan2StartTime == null) {
+            return (timeSpan2EndTime.isAfter(timeSpan1StartTime) && timeSpan2EndTime.isBefore(timeSpan1EndTime));
+        }
+
+        //убеждаемся, что второй отрезок не находится в первом, поэтому дополнительная проверка на timeSpan1EndTime == null
+        if (timeSpan2StartTime != null && timeSpan2EndTime != null && timeSpan1StartTime != null && timeSpan1EndTime == null) {
+            return (timeSpan1StartTime.isAfter(timeSpan2StartTime) && timeSpan1StartTime.isBefore(timeSpan2EndTime));
+        }
+
+        //убеждаемся, что второй отрезок не находится в первом, поэтому дополнительная проверка на timeSpan1StartTime == null
+        if (timeSpan2StartTime != null && timeSpan2EndTime != null && timeSpan1EndTime != null && timeSpan1StartTime == null) {
+            return (timeSpan1EndTime.isAfter(timeSpan2StartTime) && timeSpan1EndTime.isBefore(timeSpan2EndTime));
+        }
+
+        if (timeSpan1StartTime != null && timeSpan1EndTime != null && timeSpan2StartTime != null) {
+            return (timeSpan1StartTime.isBefore(timeSpan2StartTime) && timeSpan1EndTime.isAfter(timeSpan2StartTime))
+                    || (timeSpan2StartTime.isBefore(timeSpan1StartTime) && timeSpan2EndTime.isAfter(timeSpan1StartTime));
+        }
+
+        return false;
     }
 }
