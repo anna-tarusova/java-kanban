@@ -1,23 +1,32 @@
 package ru.yandex.practicum.tasks.test;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.tasks.exceptions.ManagerLoadException;
 import ru.yandex.practicum.tasks.exceptions.TaskNotFoundException;
 import ru.yandex.practicum.tasks.logic.FileBackedTaskManager;
+import ru.yandex.practicum.tasks.logic.Managers;
 import ru.yandex.practicum.tasks.model.Epic;
 import ru.yandex.practicum.tasks.model.Subtask;
 import ru.yandex.practicum.tasks.model.Task;
 import ru.yandex.practicum.tasks.model.enums.Status;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+
+    @BeforeEach
+    void setUp() {
+        taskManager = new FileBackedTaskManager("file1", (new Managers()).getDefaultHistory());
+    }
 
     @Test
-    public void createFromEmptyFileShouldCreateEmptyFileBackedManager() throws IOException {
+    public void loadFromFile_shouldCreateEmptyFileBackedManagerFromEmptyFile() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
 
@@ -35,11 +44,11 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void createFromFileWithOneEpicShouldCreateFileBackedManagerWithOneEpic() throws IOException {
+    public void loadFromFile_shouldCreateFileBackedManagerWithOneEpicWithStatusNewIfFileWithOneEpic() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("7,EPIC,epic1,DONE,descr");
+            fw.write("7,EPIC,epic1,DONE,descr,null,null");
         }
 
         //Act
@@ -55,18 +64,18 @@ public class FileBackedTaskManagerTest {
         Epic epic = epics.getFirst();
         assertEquals(7, epic.getId());
         assertEquals("epic1", epic.getName());
-        assertEquals(Status.DONE, epic.getStatus());
+        assertEquals(Status.NEW, epic.getStatus());//<-статус Эпика вычисляемый
         assertEquals("descr", epic.getDescription());
         assertEquals(0, subtasks.size());
     }
 
     @Test
-    public void createFromFileWithOneEpicWithSubtaskShouldCreateFileBackedManagerWithOneEpicWithSubtask() throws IOException {
+    public void loadFromFile_shouldCreateFileBackedManagerWithOneEpicWithSubtaskIfFileWithOneEpicWithSubtask() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1\n");
-            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,6\n");
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,null,null,6\n");
         }
 
         //Act
@@ -94,14 +103,13 @@ public class FileBackedTaskManagerTest {
         assertEquals("descr2", subtask.getDescription());
     }
 
-
     @Test
-    public void createFromFileWithSubtaskOfUnexistingEpicShouldThrowException() throws IOException {
+    public void loadFromFile_shouldThrowExceptionIfFileWithSubtaskOfUnexistingEpic() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1\n");
-            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,99999\n");
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,null,null,99999\n");
         }
 
         //Act & Assert
@@ -109,12 +117,12 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void createFromFileWithSubtaskWhichIsBeforeEpicShouldCreateWithoutException() throws IOException {
+    public void loadFromFile_shouldCreateWithoutExceptionIfFileWithSubtaskWhichIsBeforeEpic() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,6\n");
-            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,null,null,6\n");
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
 
         }
 
@@ -123,11 +131,11 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void createFromFileWithOnlySubtaskShouldThrowException() throws IOException {
+    public void loadFromFile_shouldThrowExceptionIfFileWithOnlySubtask() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,99999\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,null,null,99999\n");
         }
 
         //Act & Assert
@@ -135,11 +143,11 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void createFromFileWithTaskShouldCreateFileBackedTaskManagerWithThisTask() throws IOException {
+    public void loadFromFile_shouldCreateFileBackedTaskManagerWithTaskIfFileWithTask() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("7,TASK,task1,IN_PROGRESS,descr4\n");
+            fw.write("7,TASK,task1,IN_PROGRESS,descr4,null,null\n");
         }
 
         //Act
@@ -161,7 +169,7 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void addTaskShouldSaveToFile() throws IOException {
+    public void add_shouldBeAbleToSaveTaskToFile() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
 
@@ -172,12 +180,12 @@ public class FileBackedTaskManagerTest {
         //Assert
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
-            assertEquals("1,TASK,task1,NEW,descr1", line);
+            assertEquals("1,TASK,task1,NEW,descr1,null,null", line);
         }
     }
 
     @Test
-    public void addEpicShouldSaveToFile() throws IOException {
+    public void add_shouldBeAbleToSaveEpicToFile() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
 
@@ -188,12 +196,12 @@ public class FileBackedTaskManagerTest {
         //Assert
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
-            assertEquals("1,EPIC,epic1,NEW,descr1", line);
+            assertEquals("1,EPIC,epic1,NEW,descr1,null,null", line);
         }
     }
 
     @Test
-    public void addEpicWithSubtaskShouldSaveToFile() throws IOException {
+    public void add_shouldBeAbleToSaveEpicWithSubtaskToFile() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
 
@@ -209,18 +217,17 @@ public class FileBackedTaskManagerTest {
         //Assert
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
-            assertEquals("1,EPIC,epic1,NEW,descr1", line);
+            assertEquals("1,EPIC,epic1,NEW,descr1,null,null", line);
             line = br.readLine();
-            assertEquals("2,SUBTASK,subtask1,NEW,descr1,1", line);
+            assertEquals("2,SUBTASK,subtask1,NEW,descr1,null,null,1", line);
         }
     }
 
     @Test
-    public void addingSeveralTasksThenSavingShouldCreateFileBackedManagerWithThisTasks() throws IOException {
+    public void save_addingSeveralTasksThenSavingShouldCreateFileBackedManagerWithThisTasks() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
 
-        //Act
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
         Epic epic1 = new Epic("epic1", "descr1");
         Epic epic2 = new Epic("epic2", "descr2");
@@ -230,7 +237,8 @@ public class FileBackedTaskManagerTest {
         Subtask subtask3 = new Subtask("subtask3", "descr6");
         Task task = new Task("task1", "descr7");
 
-
+        //Act
+        //save вызывается внутри
         fileBackedTaskManager.add(epic1);
         fileBackedTaskManager.add(epic2);
         fileBackedTaskManager.add(epic3);
@@ -284,18 +292,18 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void afterLoadingFromFileIdShouldBeGreaterThanMaxIdInFile() throws IOException {
+    public void loadFromFile_afterLoadingFromFileIdShouldBeGreaterThanMaxIdInFile() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
-            fw.write("9999,TASK,task1,IN_PROGRESS,descr2\n");
+            fw.write("9999,TASK,task1,IN_PROGRESS,descr2,null,null\n");
         }
 
         //Act
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
-        fileBackedTaskManager.add(new Task("task2", "descr"));
 
         //Assert
+        fileBackedTaskManager.add(new Task("task2", "descr"));
         List<Task> tasks = fileBackedTaskManager.getListTasks();
         assertEquals(2, tasks.size());
         Task task2 = tasks.stream().filter(t -> t.getName().equals("task2")).findFirst().orElseThrow();
@@ -303,7 +311,7 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void loadingFromFileWithTwoSameIdsShouldThrowException() throws IOException {
+    public void loadFromFile_shouldThrowExceptionIfFileContainsTwoSameIds() throws IOException {
         //Arrange
         File file = File.createTempFile("prefix", "suffix");
         try (FileWriter fw = new FileWriter(file)) {
@@ -313,5 +321,95 @@ public class FileBackedTaskManagerTest {
 
         //Act & Assert
         assertThrows(ManagerLoadException.class, () -> FileBackedTaskManager.loadFromFile(file));
+    }
+
+    @Test
+    public void loadFromFile_shouldSetEarliestStartTimeAsStartTimeOfEpicIfFileWithOneEpicWithTwoSubtasks() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,01.01.2025 00:00,null,6\n");
+            fw.write("8,SUBTASK,subtask1,IN_PROGRESS,descr2,02.01.2025 00:00,null,6\n");
+        }
+
+        //Act
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+
+        //Assert
+        Epic epic = fileBackedTaskManager.getEpic(6);
+        LocalDateTime startTime = epic.getStartTime();
+        assertEquals(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter), startTime);
+    }
+
+    @Test
+    public void loadFromFile_shouldSetNonNullStartTimeAsStartTimeOfEpicIfFileWithOneEpicWithTwoSubtasksWhereOneStartTimeIsNull() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,01.01.2025 00:00,null,6\n");
+            fw.write("8,SUBTASK,subtask1,IN_PROGRESS,descr2,null,null,6\n");
+        }
+
+        //Act
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+
+        //Assert
+        Epic epic = fileBackedTaskManager.getEpic(6);
+        LocalDateTime startTime = epic.getStartTime();
+        assertEquals(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter), startTime);
+    }
+
+    @Test
+    public void loadFromFile_shouldSetSumOfTheDurationsAsDurationOfTheEpicIfFileWithOneEpicWithTwoSubtasksWithDurations() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,null,7,6\n");
+            fw.write("8,SUBTASK,subtask1,IN_PROGRESS,descr2,null,8,6\n");
+        }
+
+        //Act
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+
+        //Assert
+        Epic epic = fileBackedTaskManager.getEpic(6);
+        Duration duration = epic.getDuration();
+        assertEquals(Duration.ofMinutes(15), duration);
+    }
+
+    @Test
+    public void loadFromFile_shouldSetEndDateOfTheEpicIfIfFileWithOneEpicWithTwoSubtasksWithStartTimesDurations() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,01.01.2025 00:00,7,6\n");
+            fw.write("8,SUBTASK,subtask1,IN_PROGRESS,descr2,01.01.2025 15:00,8,6\n");
+        }
+
+        //Act
+        FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
+
+        //Assert
+        Epic epic = fileBackedTaskManager.getEpic(6);
+        LocalDateTime endTime = epic.getEndTime();
+        assertEquals(LocalDateTime.parse("01.01.2025 15:08", dateTimeFormatter), endTime);
+    }
+
+    @Test
+    public void loadFromFile_shouldThrowExceptionIfFileWithOneEpicWithTwoSubtasksWhichAreOverlapped() throws IOException {
+        //Arrange
+        File file = File.createTempFile("prefix", "suffix");
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("6,EPIC,epic1,IN_PROGRESS,descr1,null,null\n");
+            fw.write("7,SUBTASK,subtask1,IN_PROGRESS,descr2,01.01.2025 00:00,45,6\n");
+            fw.write("8,SUBTASK,subtask1,IN_PROGRESS,descr2,01.01.2025 00:15,45,6\n");
+        }
+
+        //Act && Assert
+        assertThrowsExactly(ManagerLoadException.class, () -> FileBackedTaskManager.loadFromFile(file));
     }
 }

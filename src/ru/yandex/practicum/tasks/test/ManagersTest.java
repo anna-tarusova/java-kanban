@@ -23,23 +23,21 @@ class ManagersTest {
     }
 
     @Test
-    void getDefaultShouldReturnTaskManagerWhichIsReadyToWork() {
+    void getDefault_shouldReturnTaskManagerWhichIsReadyToWork() {
         //Фраза из ТЗ
         //"убедитесь, что утилитарный класс всегда возвращает проинициализированные и готовые к работе экземпляры менеджеров;"
 
         //Получаем объект интерфейса TaskManager и вызываем некоторые его методы
 
-        //Arrange
+        //Arrange && Act
         TaskManager taskManager = managers.getDefault();
         Task task1 = new Task("task1", "descr1");
         Task task2 = new Task("task2", "descr2");
 
 
-        //Act
+        //Assert
         taskManager.add(task1);
         taskManager.add(task2);
-
-        //Assert
         List<Task> tasks = taskManager.getListTasks();
         assertEquals(2, tasks.size());
         Task task1WhichIsGotFromTaskManager = tasks.stream().filter(t -> t.getName().equals("task1")).findFirst().orElseThrow();
@@ -49,12 +47,12 @@ class ManagersTest {
     }
 
     @Test
-    void getDefaultHistory() {
+    void getDefaultHistory_shouldReturnHistoryManagerWhichIsReadyToWork() {
         //Фраза из ТЗ
         //"убедитесь, что утилитарный класс всегда возвращает проинициализированные и готовые к работе экземпляры менеджеров;"
 
         //Получаем объект интерфейса HistoryManager и вызываем некоторые его методы
-        //Arrange
+        //Arrange && Act
         HistoryManager historyManager = managers.getDefaultHistory();
         Task task = new Task("task1", "descr task");
         task.setId(1);
@@ -63,13 +61,12 @@ class ManagersTest {
         Subtask subtask = new Subtask("subtask1", "descr subtask");
         subtask.setId(3);
 
-        //Act
+        //Assert
         historyManager.add(task);
         historyManager.add(epic);
         historyManager.add(subtask);
         List<BaseTask> history = historyManager.getHistory();
 
-        //Assert
         assertEquals(3, history.size());
         assertEquals(task, history.get(0));
         assertEquals(epic, history.get(1));
