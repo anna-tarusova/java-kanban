@@ -5,6 +5,7 @@ import ru.yandex.practicum.tasks.model.enums.TaskType;
 public class Subtask extends BaseTask {
 
     private int epicId;
+    private final TaskType taskType = TaskType.SUBTASK;
 
     @Override
     public String toString() {
@@ -25,7 +26,7 @@ public class Subtask extends BaseTask {
 
     @Override
     public TaskType getTaskType() {
-        return TaskType.SUBTASK;
+        return taskType;
     }
 }
 

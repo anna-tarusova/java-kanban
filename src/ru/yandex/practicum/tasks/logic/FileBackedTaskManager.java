@@ -80,8 +80,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
+    public void update(Task task) {
+        super.update(task);
+        save();
+    }
+
+    @Override
     public void add(Epic task) {
         super.add(task);
+        save();
+    }
+
+    @Override
+    public void update(Epic epic) {
+        super.update(epic);
         save();
     }
 

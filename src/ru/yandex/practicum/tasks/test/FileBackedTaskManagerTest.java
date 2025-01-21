@@ -1,5 +1,6 @@
 package ru.yandex.practicum.tasks.test;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.tasks.exceptions.ManagerLoadException;
@@ -23,6 +24,15 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     @BeforeEach
     void setUp() {
         taskManager = new FileBackedTaskManager("file1", (new Managers()).getDefaultHistory());
+    }
+
+    @AfterEach()
+    void shutDown() {
+        File f = new File("file1");
+        try {
+            f.delete();
+        } catch (SecurityException e) {
+        }
     }
 
     @Test

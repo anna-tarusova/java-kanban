@@ -13,7 +13,10 @@ import java.util.Objects;
 public class Epic extends BaseTask {
 
     private LocalDateTime endTime;
+
     private List<Subtask> subtasks = new ArrayList<>();
+    private final TaskType taskType = TaskType.EPIC;
+
 
     public Epic(String name, String description) {
         super(name, description);
@@ -58,7 +61,7 @@ public class Epic extends BaseTask {
 
     @Override
     public TaskType getTaskType() {
-        return TaskType.EPIC;
+        return taskType;
     }
 
     public void addSubtask(Subtask subtask) {
@@ -99,6 +102,10 @@ public class Epic extends BaseTask {
     public void removeSubtask(int id) {
         subtasks = subtasks.stream().filter(s -> s.getId() != id).toList();
         calculateAll();
+    }
+
+    public List<Subtask> getSubtasks() {
+        return new ArrayList<>(subtasks);
     }
 
     @Override

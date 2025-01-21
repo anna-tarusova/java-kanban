@@ -21,7 +21,6 @@ public abstract class BaseTask {
     public BaseTask(String name, String description) {
         this.name = name;
         this.description = description;
-
     }
 
     @Override
