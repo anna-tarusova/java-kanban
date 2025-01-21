@@ -54,6 +54,7 @@ public class HttpTaskServerTasksTests extends HttpTaskServerBaseTests {
         assertEquals(Duration.ofMinutes(5), tasks.getFirst().getDuration(), "Некорректная продолжительность задачи");
         assertEquals(Status.DONE, tasks.getFirst().getStatus(), "Некорректный статус задачи");
     }
+
     @Test
     public void testUpdateTask() throws IOException, InterruptedException {
         // Arrange
