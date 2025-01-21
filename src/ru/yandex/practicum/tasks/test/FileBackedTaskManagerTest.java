@@ -32,6 +32,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         try {
             f.delete();
         } catch (SecurityException e) {
+            System.out.println("Файл нельзя удалить");
         }
     }
 
