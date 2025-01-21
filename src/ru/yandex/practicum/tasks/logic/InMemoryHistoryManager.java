@@ -1,6 +1,9 @@
 package ru.yandex.practicum.tasks.logic;
 
 import ru.yandex.practicum.tasks.model.BaseTask;
+import ru.yandex.practicum.tasks.model.Epic;
+import ru.yandex.practicum.tasks.model.Subtask;
+import ru.yandex.practicum.tasks.model.enums.TaskType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +19,14 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public void add(BaseTask task) {
         BaseTask copyTask = getCopyTask(task);
+
+        if (copyTask.getTaskType() == TaskType.EPIC) {
+            for (Subtask subtask : ((Epic)task).getSubtasks()) {
+                BaseTask copySubtask = getCopyTask(subtask);
+                ((Epic)copyTask).addSubtask((Subtask) copySubtask);
+            }
+        }
+
         remove(copyTask.getId());
         Node newNode = new Node(copyTask);
         taskMap.put(copyTask.getId(), newNode);

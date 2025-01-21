@@ -7,13 +7,14 @@ import ru.yandex.practicum.tasks.model.*;
 import ru.yandex.practicum.tasks.model.enums.Status;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     private int taskId = 1;
     private final Map<Integer, BaseTask> tasks = new HashMap<>();
     private final HistoryManager historyManager;
-    private final Comparator<BaseTask> taskComparator = Comparator.comparing(BaseTask::getStartTime);
+    private final Comparator<BaseTask> taskComparator = Comparator.comparing(b -> b.getStartTime() == null ? LocalDateTime.MAX : b.getStartTime());
     private final TreeSet<BaseTask> sortedTasksByStartTime = new TreeSet<>(taskComparator);
 
     public InMemoryTaskManager(HistoryManager historyManager) {
@@ -41,6 +42,43 @@ public class InMemoryTaskManager implements TaskManager {
             sortedTasksByStartTime.add(copyTask);
         }
         return copyTask;
+    }
+
+    //вспомогательный метод
+    private void updateBaseTask(BaseTask task) {
+        long overlappedCount = sortedTasksByStartTime.stream()
+                .filter(t -> t.getId() != task.getId())
+                .filter(t -> BaseTask.areTimeSpansOverLapped(t.getStartTime(), t.getEndTime(), task.getStartTime(), task.getEndTime())).count();
+        if (overlappedCount > 0) {
+            throw new TaskAddException("Есть пересечение с уже существующими тасками");
+        }
+        if (!tasks.containsKey(task.getId())) {
+            throw new TaskNotFoundException(String.format("Таска с id = %d не найдена", task.getId()));
+        }
+        BaseTask currentTask = tasks.get(task.getId());
+        switch (task.getTaskType()) {
+            case TASK -> ensureTaskIsTask(currentTask);
+            case SUBTASK -> ensureTaskIsSubTask(currentTask);
+            case EPIC -> ensureTaskIsEpic(currentTask);
+        }
+        sortedTasksByStartTime.remove(currentTask);
+
+        currentTask.setName(task.getName());
+        currentTask.setDescription(task.getDescription());
+        if (task.getTaskType() != TaskType.EPIC) {
+            currentTask.setDuration(task.getDuration());
+            currentTask.setStartTime(task.getStartTime());
+            currentTask.setStatus(task.getStatus());
+        }
+
+        if (currentTask.getTaskType() == TaskType.SUBTASK) {
+            Epic epic = (Epic) tasks.get(((Subtask)currentTask).getEpicId());
+            epic.calculateAll();
+        }
+
+        if (task.getStartTime() != null) {
+            sortedTasksByStartTime.add(task);
+        }
     }
 
     private int getNextId() {
@@ -256,8 +294,18 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
+    public void update(Task task) {
+        updateBaseTask(task);
+    }
+
+    @Override
     public void add(Epic epic) {
         addBaseTask(epic);
+    }
+
+    @Override
+    public void update(Epic epic) {
+        updateBaseTask(epic);
     }
 
     @Override
@@ -267,6 +315,27 @@ public class InMemoryTaskManager implements TaskManager {
         BaseTask copyTask = addBaseTask(subtask);
         Epic epic = (Epic)potentialEpic;
         epic.addSubtask((Subtask) copyTask);
+    }
+
+    @Override
+    public void update(Subtask subtask) {
+        BaseTask potentialEpic = getTaskOfAnyType(subtask.getEpicId());
+        ensureTaskIsEpic(potentialEpic);
+
+        BaseTask oldSubtaskPotential = getTaskOfAnyType(subtask.getId());
+        ensureTaskIsSubTask(oldSubtaskPotential);
+
+        Subtask oldSubtask = (Subtask)oldSubtaskPotential;
+
+        if (oldSubtask.getEpicId() != subtask.getEpicId()) {
+            Epic oldEpic = getEpic(oldSubtask.getEpicId());
+            oldEpic.removeSubtask(subtask.getId());
+            Epic newEpic = getEpic(subtask.getEpicId());
+            newEpic.addSubtask(subtask);
+            ((Subtask)tasks.get(subtask.getId())).setEpicId(subtask.getEpicId());
+        }
+
+        updateBaseTask(subtask);
     }
 
     @Override

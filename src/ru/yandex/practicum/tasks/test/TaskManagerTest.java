@@ -11,6 +11,7 @@ import ru.yandex.practicum.tasks.model.Task;
 import ru.yandex.practicum.tasks.model.enums.Status;
 import ru.yandex.practicum.tasks.model.enums.TaskType;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -999,5 +1000,138 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals("task1", history.get(1).getName());
         assertEquals("epic2", history.get(2).getName());
         assertEquals("epic1", history.get(3).getName());
+    }
+
+    @Test
+    void update_shouldBeAbleToUpdateTask() {
+        // Arrange
+        Task task = new Task("task1", "descr");
+        task.setStatus(Status.IN_PROGRESS);
+        task.setDuration(Duration.ofMinutes(15));
+        task.setStartTime(LocalDateTime.parse("01.02.2024 01:02", dateTimeFormatter));
+        taskManager.add(task);
+
+        // Act
+        Task updateTask = new Task("task2", "descr2");
+        updateTask.setId(1);
+        updateTask.setDuration(Duration.ofMinutes(30));
+        updateTask.setStartTime(LocalDateTime.parse("02.03.2025 02:03", dateTimeFormatter));
+        updateTask.setStatus(Status.DONE);
+        taskManager.update(updateTask);
+
+        // Assert
+        Task updatedTask = taskManager.getTask(1);
+        assertEquals("task2", updatedTask.getName());
+        assertEquals("descr2", updatedTask.getDescription());
+        assertEquals(Duration.ofMinutes(30), updatedTask.getDuration());
+        assertEquals(LocalDateTime.parse("02.03.2025 02:03", dateTimeFormatter), updatedTask.getStartTime());
+        assertEquals(Status.DONE, updatedTask.getStatus());
+    }
+
+    @Test
+    void update_shouldBeAbleToUpdateSubtask() {
+        // Arrange
+        Epic epic = new Epic("epic1", "descr1");
+        taskManager.add(epic);
+        Subtask subtask = new Subtask("task1", "descr");
+        subtask.setEpicId(1);
+        subtask.setStatus(Status.IN_PROGRESS);
+        subtask.setDuration(Duration.ofMinutes(15));
+        subtask.setStartTime(LocalDateTime.parse("01.02.2024 01:02", dateTimeFormatter));
+        taskManager.add(subtask);
+
+        // Act
+        Subtask updateSubtask = new Subtask("task2", "descr2");
+        updateSubtask.setId(2);
+        updateSubtask.setEpicId(1);
+        updateSubtask.setDuration(Duration.ofMinutes(30));
+        updateSubtask.setStartTime(LocalDateTime.parse("02.03.2025 02:03", dateTimeFormatter));
+        updateSubtask.setStatus(Status.DONE);
+        taskManager.update(updateSubtask);
+
+        // Assert
+        Subtask updatedSubtask = taskManager.getSubtask(2);
+        assertEquals("task2", updatedSubtask.getName());
+        assertEquals("descr2", updatedSubtask.getDescription());
+        assertEquals(Duration.ofMinutes(30), updatedSubtask.getDuration());
+        assertEquals(LocalDateTime.parse("02.03.2025 02:03", dateTimeFormatter), updatedSubtask.getStartTime());
+        assertEquals(Status.DONE, updatedSubtask.getStatus());
+    }
+
+    @Test
+    void update_updateOfSubtaskShouldAffectEpic() {
+        // Arrange
+        Epic epic = new Epic("epic1", "descr1");
+        taskManager.add(epic);
+        Subtask subtask = new Subtask("task1", "descr");
+        subtask.setEpicId(1);
+        subtask.setStatus(Status.NEW);
+        subtask.setDuration(Duration.ofMinutes(15));
+        subtask.setStartTime(LocalDateTime.parse("01.01.2025 00:00", dateTimeFormatter));
+        taskManager.add(subtask);
+
+        Subtask subtask2 = new Subtask("task2", "descr2");
+        subtask2.setEpicId(1);
+        subtask2.setStatus(Status.NEW);
+        subtask2.setDuration(Duration.ofMinutes(15));
+        subtask2.setStartTime(LocalDateTime.parse("01.01.2025 00:15", dateTimeFormatter));
+        taskManager.add(subtask);
+
+        // Act
+        Subtask updateSubtask = new Subtask("task2", "descr2");
+        updateSubtask.setId(3);
+        updateSubtask.setEpicId(1);
+        updateSubtask.setDuration(Duration.ofMinutes(30));
+        updateSubtask.setStartTime(LocalDateTime.parse("01.01.2024 00:00", dateTimeFormatter));
+        updateSubtask.setStatus(Status.DONE);
+        taskManager.update(updateSubtask);
+
+        // Assert
+        Epic updatedEpic = taskManager.getEpic(1);
+        assertEquals(LocalDateTime.parse("01.01.2024 00:00", dateTimeFormatter), updatedEpic.getStartTime());
+        assertEquals(Status.IN_PROGRESS, updatedEpic.getStatus());
+        assertEquals(Duration.ofMinutes(45), updatedEpic.getDuration());
+    }
+
+    @Test
+    void update_shouldBeAbleToChangeEpicOfSubtask() {
+        // Arrange
+        Epic epic = new Epic("epic1", "descr1");
+        taskManager.add(epic);
+        Subtask subtask = new Subtask("task1", "descr");
+        subtask.setEpicId(1);
+        taskManager.add(subtask);
+        Epic epic2 = new Epic("epic2", "descr2");
+        taskManager.add(epic2);
+
+        // Act
+        Subtask updateSubtask = new Subtask("task2", "descr2");
+        updateSubtask.setId(2);
+        updateSubtask.setEpicId(3);
+        taskManager.update(updateSubtask);
+
+        // Assert
+        List<Subtask> subtasksOfEpic1 = taskManager.getSubtasksOfEpic(1);
+        assertEquals(0, subtasksOfEpic1.size());
+
+        List<Subtask> subtasksOfEpic2 = taskManager.getSubtasksOfEpic(3);
+        assertEquals(1, subtasksOfEpic2.size());
+    }
+
+    @Test
+    void update_shouldBeAbleToUpdateEpic() {
+        // Arrange
+        Epic epic = new Epic("epic1", "descr");
+        taskManager.add(epic);
+
+        // Act
+        Epic updateEpic = new Epic("epic2", "descr2");
+        updateEpic.setId(1);
+        taskManager.update(updateEpic);
+
+        // Assert
+        Epic updatedEpic = taskManager.getEpic(1);
+        assertEquals("epic2", updatedEpic.getName());
+        assertEquals("descr2", updatedEpic.getDescription());
     }
 }
