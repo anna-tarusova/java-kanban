@@ -21,7 +21,6 @@ public class HttpTaskServerPrioritizedTests extends HttpTaskServerBaseTests {
 
     URI urlPrioritized = URI.create("http://localhost:8080/prioritized");
 
-
     public HttpTaskServerPrioritizedTests() throws IOException {
     }
 
